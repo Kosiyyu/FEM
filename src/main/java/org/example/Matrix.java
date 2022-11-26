@@ -1,7 +1,5 @@
 package org.example;
 
-import org.apache.commons.math.linear.RealMatrix;
-
 public class Matrix {
 
     public static double [][] getRow(int index, double[][] pass){
