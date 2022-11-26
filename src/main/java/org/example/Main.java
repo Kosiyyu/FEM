@@ -54,7 +54,6 @@ public class Main {
             container.setNodes(null);
             container.setWeight(null);
             System.out.println("Invalid n");
-            System.exit(0);
         }
         return container;
     }
@@ -149,9 +148,8 @@ public class Main {
         }
 
         nOverKsi = Matrix.transformHorizontally2dArray(nOverKsi);
-        Matrix.print2dArray(nOverKsi);
         nOverEta = Matrix.transformVertically2dArray(nOverEta);
-        Matrix.print2dArray(nOverEta);
+
         /////////////////////////////////////////
         //Obliczenia dla jednego punktu z pdf'a//
         /////////////////////////////////////////
@@ -172,8 +170,7 @@ public class Main {
 
         double detT = miniMatrix[0][0] * miniMatrix[1][1] - miniMatrix[0][1] * miniMatrix[1][0];
         double oneByDetT = 1.0 / detT;
-        //to bedzie const (to co wyzej)
-        //do dopisania bo to jest na sztywno :cc chociaz chyba i tak zadaziala
+        //do zmiany bo jest na sztywno
 
         double[][] miniMatrixMultipliedByOneByDetT = Matrix.multiplyNumberBy2dArray(oneByDetT, miniMatrix);
 
@@ -183,60 +180,31 @@ public class Main {
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nDSF; j++){
                 nOverX[i][j] = miniMatrixMultipliedByOneByDetT[0][1] * nOverKsi[i][j] + miniMatrixMultipliedByOneByDetT[1][1] * nOverKsi[i][j] ;
-                //System.out.println(nOverX[i][j] + " ");
                 nOverY[i][j] = miniMatrixMultipliedByOneByDetT[0][0] * nOverEta[i][j] + miniMatrixMultipliedByOneByDetT[1][0] * nOverEta[i][j] ;
             }
         }
 
-        System.out.println("-------------------------------");
-        System.out.println("nOverX:");
-        Matrix.print2dArray(nOverX);
-        System.out.println("-------------------------------");
-        System.out.println("nOverY:");
-        Matrix.print2dArray(nOverY);
-
         double dummyConductivity = 30.0;
 
-        RealMatrix realMatrixX = new Array2DRowRealMatrix(nOverX);
-        realMatrixX = new Array2DRowRealMatrix(realMatrixX.getRow(0));
-        RealMatrix realMatrixY = new Array2DRowRealMatrix(nOverY);
-        realMatrixY = new Array2DRowRealMatrix(realMatrixY.getRow(0));
-        double [][] yCol = realMatrixY.getData();
-        double [][] yRow = new double [yCol[0].length][yCol.length];
+        double [][] yRow = Matrix.getRow(0, nOverY);
+        double [][] yCol = Matrix.replace2dArrayDimensions(yRow);
 
-        int realRowY = 0;
-        for(int i = 0; i < yRow[0].length;i++){
-            yRow[realRowY][i] = yCol[i][realRowY];
-        }
+        double [][] xRow = Matrix.getRow(0, nOverX);
+        double [][] xCol = Matrix.replace2dArrayDimensions(xRow);
+        double [][] yColumnMultipliedByYRow = Matrix.multiply2dArrays(yCol, yRow);
+        double [][] xColumnMultipliedByXRow = Matrix.multiply2dArrays(xCol, xRow);
 
-        double [][] xCol = realMatrixX.getData();
-        double [][] xRow = new double [xCol[0].length][xCol.length];
-        for(int i = 0; i < yCol.length; i++){
-            xRow[yCol[0].length - 1][i] = xCol[i][xCol[0].length - 1];
-        }
+        //Matrix.print2dArray(xColumnMultipliedByXRow);
+        //Matrix.print2dArray(yColumnMultipliedByYRow);
 
-        RealMatrix yC = new Array2DRowRealMatrix(yCol);
-        RealMatrix yR = new Array2DRowRealMatrix(yRow);
-        RealMatrix xC = new Array2DRowRealMatrix(xCol);
-        RealMatrix xR = new Array2DRowRealMatrix(xRow);
 
-        RealMatrix xCxR = xC.multiply(xR);
-        RealMatrix yCyR = yC.multiply(yR);
+        double [][] H = Matrix.multiplyNumberBy2dArray(detT * dummyConductivity, Matrix.add2dArrays(xColumnMultipliedByXRow, yColumnMultipliedByYRow));
 
-        RealMatrix sum = xCxR.add(yCyR);
-        double [][] H = sum.getData();
-        H = Matrix.multiplyNumberBy2dArray(detT * dummyConductivity, H);
-
-        System.out.println("-------------------------------");
-        System.out.println("H: ");
         Matrix.print2dArray(H);
 
-        /*
-        RealMatrix matrixB = new Array2DRowRealMatrix(bb2d);
-        RealMatrix matrixC = new Array2DRowRealMatrix(cc2d);
-        RealMatrix matrix = matrixB.multiply(matrixC);
-        Matrix.print2dArray(matrix.getData());
-        */
+
+
+
 
 
 
