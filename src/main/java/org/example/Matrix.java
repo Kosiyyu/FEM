@@ -61,7 +61,7 @@ public class Matrix {
         if(pass[0].length > 1) {
             arr = new double[pass.length][pass[0].length];
             for (int i = 0; i < arr.length; i++) {
-                for (int j = 0; j < arr[i].length / 2; j++) {
+                for (int j = 0; j < arr[i].length; j++) {
                     arr[i][j] = pass[i][arr[i].length - 1 - j];
                     arr[i][arr[i].length - 1 - j] = pass[i][j];
                 }
@@ -75,7 +75,7 @@ public class Matrix {
         }
         else if(pass[0].length == 1){
             arr = new double[pass.length][pass[0].length];
-            for (int i = 0; i < arr.length / 2; i++) {
+            for (int i = 0; i < arr.length; i++) {
                 //System.out.println(arr[i][0]);
                 arr[i][0] = pass[arr.length - 1 - i][0];
                 arr[arr.length - 1 - i][0] = pass[i][0];
@@ -89,7 +89,7 @@ public class Matrix {
         double[][] arr = null;
         if(pass.length > 1){
             arr = new double[pass.length][pass[0].length];
-            for (int i = 0; i < arr.length / 2; i++) {
+            for (int i = 0; i < arr.length; i++) {
                 for(int j = 0; j < arr[0].length; j++) {
                     arr[i][j] = pass[arr.length - 1 - i][j];
                     arr[arr.length - 1 - i][j] = pass[i][j];
@@ -105,7 +105,7 @@ public class Matrix {
         }
         else if(pass.length == 1){
             arr = new double[pass.length][pass[0].length];
-            for (int j = 0; j < arr[0].length / 2; j++) {
+            for (int j = 0; j < arr[0].length; j++) {
                 arr[0][j] = pass[0][arr[0].length - 1 - j];
                 arr[0][arr[0].length - 1 - j] = pass[0][j];
             }

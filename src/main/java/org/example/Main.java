@@ -132,7 +132,7 @@ public class Main {
         Grid grid;
         String fileName = "test.txt";
 
-        int numberOfIntegrationPoints = 2;//liczba punktow calkowania
+        int numberOfIntegrationPoints = 5;//liczba punktow calkowania
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         DataImporter dataImporter = new DataImporter();
@@ -163,18 +163,18 @@ public class Main {
             }
 
             double [][]resultH = new double[nDSF][nDSF];
-            for(int resultNodesCounter = 0; resultNodesCounter < resultNodes.length; resultNodesCounter++) {
+
+            for(int resultNodesCounter = 0; resultNodesCounter < nodes.length; resultNodesCounter++) {
+
                 double x = 0.0;
                 double y = 0.0;
                 for (int i = 0; i < resultNodes.length; i++) {
                     x += resultNodes[i].getX() * universalElement.getNOverKsi()[resultNodesCounter][i];
                     y += resultNodes[i].getY() * universalElement.getNOverEta()[resultNodesCounter][i];
                 }
-
                 double[][] jacobi = {{x, 0}, {0, y}};
                 double determinant = jacobi[0][0] * jacobi[1][1] - jacobi[0][1] * jacobi[1][0];
                 double[][] inverseJacobi = Matrix.multiplyNumberBy2dArray(1.0 / determinant, jacobi);
-
                 double nOverX[][] = new double[nodes.length][nDSF];
                 double nOverY[][] = new double[nodes.length][nDSF];
                 for (int i = 0; i < nodes.length; i++) {
