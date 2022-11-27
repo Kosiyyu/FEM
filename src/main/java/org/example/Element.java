@@ -5,11 +5,8 @@ import lombok.Data;
 @Data
 public class Element {
 
-    private int elementId = -1;
-    private int[] ID = new int[4];
-
-    public Element() {
-    }
+    private int elementId;
+    private int[] ID;
 
     public Element(int elementId, int[] ID) {
         this.elementId = elementId;
