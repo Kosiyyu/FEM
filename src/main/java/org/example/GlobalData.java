@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class GlobalData {
+
     private double simulationTime = 0.0;
     private double simulationStepTime = 0.0;
     private double conductivity = 0.0;

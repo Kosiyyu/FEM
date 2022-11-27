@@ -18,22 +18,6 @@ public class Matrix {
         return arr;
     }
 
-//    public static double [][] getRow(int index, double[][] pass){
-//        double [][] arr = new double[pass.length][1];
-//        for(int i = 0; i < arr.length; i++){
-//            arr[i][0] = pass[index][i];
-//        }
-//        return arr;
-//    }
-//
-//    public static double [][] getColumn(int index, double[][] pass){
-//        double [][] arr = new double[1][pass.length];
-//        for(int i = 0; i < arr[0].length; i++){
-//            arr[0][i] = pass[i][index];
-//        }
-//        return arr;
-//    }
-
     public static void print2dArray(double[][] arr) {
         System.out.println("--2dArray-->    " + "y: " + arr.length + ", x: " + arr[0].length);
         for (int i = 0; i < arr.length; i++) {
@@ -63,16 +47,6 @@ public class Matrix {
             }
         }
     }
-
-//    public static double[][] replace2dArrayDimensions(double[][] pass){
-//
-//        double[][] arr = new double[pass[0].length][pass.length];
-//        System.out.println(arr.length + " " + arr[0].length);
-//        for(int i = 0; i < arr.length; i++){
-//            arr[i][arr[0].length - 1] = pass[arr[0].length - 1][i];
-//        }
-//        return arr;
-//    }
 
     public static double[][] replace2dArrayDimensions(double[][] pass){
         double[][] arr = new double[pass[0].length][pass.length];

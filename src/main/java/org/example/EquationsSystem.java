@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class EquationsSystem {
+
     private double[][] HG;
 
     private int size;

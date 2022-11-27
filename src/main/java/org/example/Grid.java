@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class Grid {
+
     private int numberOfNodes;
     private int numberOfElements;
     private Node[] nodes;

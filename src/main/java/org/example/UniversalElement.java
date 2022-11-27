@@ -7,7 +7,6 @@ import java.util.List;
 
 @Data
 public class UniversalElement {
-    //wartosci pochodnych dN/dKsi i dN/dEta
 
     private double[][] nOverKsi;
     private double[][] nOverEta;
