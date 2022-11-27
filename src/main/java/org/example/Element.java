@@ -6,14 +6,16 @@ import lombok.Data;
 public class Element {
 
     private int elementId;
-    private int[] ID;
+    private int[] nodeIds;
+
+    private double[][] H;
 
     public Element(int elementId, int[] ID) {
         this.elementId = elementId;
-        this.ID = ID;
+        this.nodeIds = ID;
     }
 
     public String toString() {
-        return "ID[0]: " + ID[0] + ", ID[1]: " + ID[1] + ", ID[2]: " + ID[2] + ", ID[3]: " + ID[3];
+        return "ID[0]: " + nodeIds[0] + ", ID[1]: " + nodeIds[1] + ", ID[2]: " + nodeIds[2] + ", ID[3]: " + nodeIds[3];
     }
 }

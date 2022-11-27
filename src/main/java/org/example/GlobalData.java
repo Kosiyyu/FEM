@@ -1,5 +1,8 @@
 package org.example;
 
+import lombok.Data;
+
+@Data
 public class GlobalData {
     private double simulationTime = 0.0;
     private double simulationStepTime = 0.0;

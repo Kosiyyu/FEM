@@ -1,5 +1,8 @@
 package org.example;
 
+import lombok.Data;
+
+@Data
 public class Grid {
     private int numberOfNodes;
     private int numberOfElements;
@@ -21,12 +24,10 @@ public class Grid {
         String str = "Grid{" + "\n" + "Number of nodes: " + numberOfNodes + "\n" + "Number od elements: " + numberOfElements + "\n";
         str += "Nodes:" + "\n";
         for(int i = 0; i < numberOfNodes; i++){
-
             str += i + ". (" + nodes[i] + ")" + "\n";
         }
         str += "Elements:" + "\n";
         for(int i = 0; i < numberOfElements; i++){
-
             str += i + ". (" + elements[i] + ")" + "\n";
         }
         return str + "}";

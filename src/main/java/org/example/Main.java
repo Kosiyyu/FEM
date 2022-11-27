@@ -2,19 +2,17 @@ package org.example;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
 
     @Data
     private static class Container{
-        private List<Double> weights;
+        private Point[] weights;
         private Point[] points;
 
-        public Container(List<Double> weights, Point[] points) {
+        public Container(Point[] weights, Point[] points) {
             this.weights = weights;
             this.points = points;
         }
@@ -23,60 +21,61 @@ public class Main {
         //nPoints - zmienna wyznaczajaca ilos pounktow calkowania
 
         List<Double> nodes = new ArrayList<>();
-        List<Double> weight = new ArrayList<>();
-        
+        List<Double> weights = new ArrayList<>();
+
         if (numberOfIntegrationPoints == 2) {
             nodes.add(1 / Math.sqrt(3));
-            weight.add(1.0);
+            weights.add(1.0);
             nodes.add(-1 / Math.sqrt(3));
-            weight.add(1.0);
+            weights.add(1.0);
         } else if (numberOfIntegrationPoints == 3) {
             nodes.add(Math.sqrt(3.0 / 5.0));
-            weight.add(5.0 / 9.0);
+            weights.add(5.0 / 9.0);
             nodes.add(0.0);
-            weight.add(8.0 / 9.0);
+            weights.add(8.0 / 9.0);
             nodes.add(-Math.sqrt(3.0 / 5.0));
-            weight.add(5.0 / 9.0);
+            weights.add(5.0 / 9.0);
         } else if (numberOfIntegrationPoints == 4) {
             nodes.add(-0.861136);
-            weight.add(0.347855);
+            weights.add(0.347855);
             nodes.add(-0.339981);
-            weight.add(0.652145);
+            weights.add(0.652145);
             nodes.add(0.339981);
-            weight.add(0.652145);
+            weights.add(0.652145);
             nodes.add(0.861136);
-            weight.add(0.347855);
+            weights.add(0.347855);
         } else if (numberOfIntegrationPoints == 5) {
             nodes.add(-0.906180);
-            weight.add(0.236927);
+            weights.add(0.236927);
             nodes.add(-0.538469);
-            weight.add(0.478629);
+            weights.add(0.478629);
             nodes.add(0.0);
-            weight.add(0.568889);
+            weights.add(0.568889);
             nodes.add(0.538469);
-            weight.add(0.478629);
+            weights.add(0.478629);
             nodes.add(0.906180);
-            weight.add(0.236927);
+            weights.add(0.236927);
         } else {
             nodes = null;
-            weight = null;
+            weights = null;
             System.out.println("Invalid n");
         }
 
-        Point[] points = new Point[nodes.size() * nodes.size()];
+        Point[] nodePoints = new Point[nodes.size() * nodes.size()];
+        Point[] weightPoints = new Point[weights.size() * weights.size()];
 
         int counter = 0;
         for(int i = 0; i < nodes.size(); i++){
             for(int j = 0; j < nodes.size(); j++){
-                points[counter] = new Point(nodes.get(i), nodes.get(j));
+                nodePoints[counter] = new Point(nodes.get(i), nodes.get(j));
+                weightPoints[counter] = new Point(weights.get(i), weights.get(j));
                 counter++;
             }
         }
 
-        Container container = new Container(nodes, points);
+        Container container = new Container(weightPoints, nodePoints);
         return container;
     }
-
     public static double integerQuadrature(int N, double upperBoundary, double lowerBoundary, FunctionalInterface functionalInterface){
         double det = (upperBoundary - lowerBoundary) / 2;
         List<Double> nodes = new ArrayList<>();
@@ -130,7 +129,7 @@ public class Main {
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         Container container = pointsAndWeights(numberOfIntegrationPoints);
-        List<Double> weightFlag = container.getWeights();
+        Point[] weights = container.getWeights();
         Point[] points = container.getPoints();
 
         /*
@@ -145,101 +144,108 @@ public class Main {
 
 
 
+        Element []resultElements = grid.getElements();
+            for(int resultElementCounter = 0; resultElementCounter < grid.getElements().length; resultElementCounter++) {
+            /////////////////////////////////////////
+            //Obliczenia dla jednego Elementu z danych wczytanych//
+            /////////////////////////////////////////
+            int []nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
 
+            Node[] resultNodes = new Node[4];
+            /*
+            resultNodes[0] = new Node(0, 0);
+            resultNodes[1] = new Node(0.025, 0);
+            resultNodes[2] = new Node(0.025, 0.025);
+            resultNodes[3] = new Node(0, 0.025);
+            */
 
-        /////////////////////////////////////////
-        //Obliczenia dla jednego punktu z pdf'a//
-        /////////////////////////////////////////
-        Node[] dummyNodes = new Node[4];
-        dummyNodes[0] = new Node(0, 0);
-        dummyNodes[1] = new Node(0.025, 0);
-        dummyNodes[2] = new Node(0.025, 0.025);
-        dummyNodes[3] = new Node(0, 0.025);
-
-        double dummyConductivity = 30.0;
-
-        for(int dummyCounter = 0; dummyCounter < dummyNodes.length; dummyCounter++) {
-
-
-
-
-        /*
-            TO EDIT!!!
-            Wyznaczanie takiej malej macierzy sluzacej do przejscia z ukladu lokalnego do globalnego. Obliczenie
-            wyznacznika macierzy i odwrotości wyznacznika macierzy(do poprawy te wyznaczniki bo nie sa liczone z klasy
-            Matrix. Ogolnie ten kom tez do edycji.
-
-                                   tutaj zmieniamy
-                                           |
-                                           |
-                                           |
-                                           V
-            universalElement.getNOverKsi()[0][i];
-            universalElement.getNOverEta()[0][i];
-
-
-        */
-            double x = 0.0;
-            double y = 0.0;
-            for (int i = 0; i < dummyNodes.length; i++) {
-                x += dummyNodes[i].getX() * universalElement.getNOverKsi()[dummyCounter][i];
-                y += dummyNodes[i].getY() * universalElement.getNOverEta()[dummyCounter][i];
+            for (int i = 0; i < resultNodes.length; i++){
+                final int finalI = i;
+                Node n = Arrays.stream(grid.getNodes()).collect(Collectors.toList()).stream()
+                        .filter(node -> node.getNodeId() == nodeIds[finalI])
+                        .findFirst()
+                        .get();
+                resultNodes[i] = n;
+                //System.out.println(n);
             }
-            double[][] miniMatrix = {{x, 0}, {0, y}};
-            double detT = miniMatrix[0][0] * miniMatrix[1][1] - miniMatrix[0][1] * miniMatrix[1][0];
-            double oneByDetT = 1.0 / detT;
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //System.out.println("----------NEW----------");
 
-        /*
-            Przejscie z ukladu lokalnego w globalny, z Ksi i Eta do x i y. Tutaj nic nie zmieniamy!!!
-        */
-            double[][] miniMatrixMultipliedByOneByDetT = Matrix.multiplyNumberBy2dArray(oneByDetT, miniMatrix);
-            double nOverX[][] = new double[points.length][nDSF];
-            double nOverY[][] = new double[points.length][nDSF];
-            for (int i = 0; i < points.length; i++) {
-                for (int j = 0; j < nDSF; j++) {
-                    nOverX[i][j] = miniMatrixMultipliedByOneByDetT[0][1] * universalElement.getNOverKsi()[i][j] + miniMatrixMultipliedByOneByDetT[1][1] * universalElement.getNOverKsi()[i][j];
-                    nOverY[i][j] = miniMatrixMultipliedByOneByDetT[0][0] * universalElement.getNOverEta()[i][j] + miniMatrixMultipliedByOneByDetT[1][0] * universalElement.getNOverEta()[i][j];
+            double [][]resultH = new double[4][4];
+
+            for(int resultNodesCounter = 0; resultNodesCounter < resultNodes.length; resultNodesCounter++) {
+
+
+
+
+            /*
+                TO EDIT!!!
+                Wyznaczanie takiej malej macierzy sluzacej do przejscia z ukladu lokalnego do globalnego. Obliczenie
+                wyznacznika macierzy i odwrotości wyznacznika macierzy(do poprawy te wyznaczniki bo nie sa liczone z klasy
+                Matrix. Ogolnie ten kom tez do edycji.
+
+                                       tutaj zmieniamy
+                                               |
+                                               |
+                                               |
+                                               V
+                universalElement.getNOverKsi()[0][i];
+                universalElement.getNOverEta()[0][i];
+
+
+            */
+                double x = 0.0;
+                double y = 0.0;
+                for (int i = 0; i < resultNodes.length; i++) {
+                    x += resultNodes[i].getX() * universalElement.getNOverKsi()[resultNodesCounter][i];
+                    y += resultNodes[i].getY() * universalElement.getNOverEta()[resultNodesCounter][i];
                 }
+                double[][] miniMatrix = {{x, 0}, {0, y}};
+                double detT = miniMatrix[0][0] * miniMatrix[1][1] - miniMatrix[0][1] * miniMatrix[1][0];
+                double oneByDetT = 1.0 / detT;
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+                Przejscie z ukladu lokalnego w globalny, z Ksi i Eta do x i y. Tutaj nic nie zmieniamy!!!
+            */
+                double[][] miniMatrixMultipliedByOneByDetT = Matrix.multiplyNumberBy2dArray(oneByDetT, miniMatrix);
+                double nOverX[][] = new double[points.length][nDSF];
+                double nOverY[][] = new double[points.length][nDSF];
+                for (int i = 0; i < points.length; i++) {
+                    for (int j = 0; j < nDSF; j++) {
+                        nOverX[i][j] = miniMatrixMultipliedByOneByDetT[0][1] * universalElement.getNOverKsi()[i][j] + miniMatrixMultipliedByOneByDetT[1][1] * universalElement.getNOverKsi()[i][j];
+                        nOverY[i][j] = miniMatrixMultipliedByOneByDetT[0][0] * universalElement.getNOverEta()[i][j] + miniMatrixMultipliedByOneByDetT[1][0] * universalElement.getNOverEta()[i][j];
+                    }
+                }
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+                Obliczanie macierzy H dla punktu calkowania.
+
+                                       tutaj zmieniamy
+                                               |
+                                               |
+                                               |
+                                               V
+                                 Matrix.getRow(1, nOverY);
+                                 Matrix.getRow(1, nOverX);
+            */
+                double[][] yRow = Matrix.getRow(resultNodesCounter, nOverY);
+                double[][] yCol = Matrix.replace2dArrayDimensions(yRow);
+                double[][] xRow = Matrix.getRow(resultNodesCounter, nOverX);
+                double[][] xCol = Matrix.replace2dArrayDimensions(xRow);
+                double[][] yColumnMultipliedByYRow = Matrix.multiply2dArrays(yCol, yRow);
+                double[][] xColumnMultipliedByXRow = Matrix.multiply2dArrays(xCol, xRow);
+                double[][] H = Matrix.multiplyNumberBy2dArray(detT * globalData.getConductivity(), Matrix.add2dArrays(xColumnMultipliedByXRow, yColumnMultipliedByYRow));
+                H = Matrix.multiplyNumberBy2dArray(weights[resultNodesCounter].x * weights[resultNodesCounter].y, H);
+                resultH = Matrix.add2dArrays(resultH, H);
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //System.out.println("H" + (resultNodesCounter + 1) + " ");
+                //Matrix.print2dArray(H);
+                //Matrix.print2dArray(resultH);
             }
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /*
-            Obliczanie macierzy H dla punktu calkowania.
-
-                                   tutaj zmieniamy
-                                           |
-                                           |
-                                           |
-                                           V
-                             Matrix.getRow(1, nOverY);
-                             Matrix.getRow(1, nOverX);
-        */
-            double[][] yRow = Matrix.getRow(dummyCounter, nOverY);
-            double[][] yCol = Matrix.replace2dArrayDimensions(yRow);
-            double[][] xRow = Matrix.getRow(dummyCounter, nOverX);
-            double[][] xCol = Matrix.replace2dArrayDimensions(xRow);
-            double[][] yColumnMultipliedByYRow = Matrix.multiply2dArrays(yCol, yRow);
-            double[][] xColumnMultipliedByXRow = Matrix.multiply2dArrays(xCol, xRow);
-            double[][] H = Matrix.multiplyNumberBy2dArray(detT * dummyConductivity, Matrix.add2dArrays(xColumnMultipliedByXRow, yColumnMultipliedByYRow));
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            System.out.println("H" + (dummyCounter + 1) + " ");
-            Matrix.print2dArray(H);
-
-
+                Matrix.print2dArray(resultH);
+            grid.getElements()[resultElementCounter].setH(resultH);
+            //Matrix.print2dArray(grid.getElements()[resultElementCounter].getH());
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }
