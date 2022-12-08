@@ -94,7 +94,7 @@ public class Main {
         //DALA JEDNEJ SCIANY KTORA JEST SCIANA BRZEGOWA
         //Point[] dummyPoints = {new Point(-1,0.5773), new Point(-1,-0.5773)};//0.7886
 
-        int numberOfIntegrationPointsOnSide = 2;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
+        int numberOfIntegrationPointsOnSide = 5;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
 
         double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
 
@@ -130,42 +130,56 @@ public class Main {
 
 
 
-        for(Point p : dummyPoints){
+/*        for(Point p : dummyPoints){
             System.out.println(p.x + " " + p.y);
         }
 
-        System.out.println("-------");
-        double[] dummyWeights = {1 ,1};//0.7886
-        Point[] dummyNodes = {new Point(0,0), new Point(0.025,0), new Point(0.025,0.025), new Point(0,0.025)};
-        double[][] nArray = new double[dummyPoints.length][nDSF];
+        System.out.println("-------");*/
 
-        double detJ = MathFunctions.distance(dummyNodes[0], dummyNodes[1]) / 2.0;
+
+        double[] dummyWeights = MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide);
+        Point[] dummyNodes = {new Point(0,0), new Point(0.025,0), new Point(0.025,0.025), new Point(0,0.025)};
+        double[][] nArray = new double[numberOfIntegrationPointsOnSide][nDSF];
         double alfa = 25.0;
 
-        double [][] HBC = new double[nDSF][nDSF];
+        for(int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
+            double[][] HBC = new double[nDSF][nDSF];
+            //System.out.println(x);
 
-        for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
-            double ksi = dummyPoints[i].x;
-            double eta = dummyPoints[i].y;
-            for (int j = 0; j < nDSF; j++) {
-                if (j == 0) {
-                    nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
-                } else if (j == 1) {
-                    nArray[i][j] = 0.25 * (1 + ksi) * (1 - eta);
-                } else if (j == 2) {
-                    nArray[i][j] = 0.25 * (1 + ksi) * (1 + eta);
-                } else if (j == 3) {
-                    nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
-                }
+            double detJ;
+            if(x != 3){
+                detJ = MathFunctions.distance(dummyNodes[x], dummyNodes[x + 1]) / 2.0;
             }
-
-            double [][] row = Matrix.getRow(i,nArray);
-            double [][] transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i,nArray));
-
-            HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(alfa * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+            else {
+                detJ = MathFunctions.distance(dummyNodes[3], dummyNodes[0]) / 2.0;
+            }
+            double[][] row = new double[0][];
+            double[][] transRow = new double[0][];
+            for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
+                double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
+                double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
+                //System.out.println(ksi + " " + eta);
+                for (int j = 0; j < nDSF; j++) {
+                    if (j == 0) {
+                        nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
+                    } else if (j == 1) {
+                        nArray[i][j] = 0.25 * (1 + ksi) * (1 - eta);
+                    } else if (j == 2) {
+                        nArray[i][j] = 0.25 * (1 + ksi) * (1 + eta);
+                    } else if (j == 3) {
+                        nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
+                    }
+                }
+                //Matrix.print2dArray(nArray);
+                row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
+                transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
+                HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(alfa * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+            }
+            //System.out.println(x);
+            //Matrix.print2dArray(nArray);
+            Matrix.print2dArray(HBC);//dobrze wychodzi
+            //tera trzeba powtorzyc dla innych bokow
         }
-        Matrix.print2dArray(HBC);//dobrze wychodzi
-        //tera trzeba powtorzyc dla innych bokow
 
 
         /*  BUG!!! DEL WHEN FIXED

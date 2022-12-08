@@ -164,31 +164,39 @@ public class MathFunctions {
         return nodesArray;
     }
 
-    public static double[][] coefficientsOfGaussianLagrangeQuadrature2(int numberOfIntegrationPoints ) {
+    public static double[] coefficientsOfGaussianLagrangeQuadrature2(int numberOfIntegrationPoints ) {
         List<Double> coefficients = new ArrayList<>();
-        double [][] coefficientsArray = null;
+        double [] coefficientsArray = new double[numberOfIntegrationPoints];
         if (numberOfIntegrationPoints == 2) {
             coefficients.add(1.0);
             coefficients.add(1.0);
-            coefficientsArray = coefficients.toArray(coefficientsArray);
+            for(int i = 0; i < coefficients.size(); i++){
+                coefficientsArray[i] = coefficients.get(i);
+            }
         } else if (numberOfIntegrationPoints == 3) {
             coefficients.add(5.0 / 9.0);
             coefficients.add(8.0 / 9.0);
             coefficients.add(5.0 / 9.0);
-            coefficientsArray = coefficients.toArray(coefficientsArray);
+            for(int i = 0; i < coefficients.size(); i++){
+                coefficientsArray[i] = coefficients.get(i);
+            }
         } else if (numberOfIntegrationPoints == 4) {
             coefficients.add(0.347855);
             coefficients.add(0.652145);
             coefficients.add(0.652145);
             coefficients.add(0.347855);
-            coefficientsArray = coefficients.toArray(coefficientsArray);
+            for(int i = 0; i < coefficients.size(); i++){
+                coefficientsArray[i] = coefficients.get(i);
+            }
         } else if (numberOfIntegrationPoints == 5) {
             coefficients.add(0.236927);
             coefficients.add(0.478629);
             coefficients.add(0.568889);
             coefficients.add(0.478629);
             coefficients.add(0.236927);
-            coefficientsArray = coefficients.toArray(coefficientsArray);
+            for(int i = 0; i < coefficients.size(); i++){
+                coefficientsArray[i] = coefficients.get(i);
+            }
         } else {
             coefficients = null;
             System.out.println("Invalid n");
