@@ -7,136 +7,6 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    @Data
-    private static class Container{
-        private Point[] weights;
-        private Point[] nodes;
-
-        public Container(Point[] weights, Point[] nodes) {
-            this.weights = weights;
-            this.nodes = nodes;
-        }
-    }
-    public static Container calculateNodesAndWeights(int numberOfIntegrationPoints) {
-        //nPoints - zmienna wyznaczajaca ilos pounktow calkowania
-
-        List<Double> nodes = new ArrayList<>();
-        List<Double> weights = new ArrayList<>();
-
-        if (numberOfIntegrationPoints == 2) {
-            nodes.add(1 / Math.sqrt(3));
-            weights.add(1.0);
-            nodes.add(-1 / Math.sqrt(3));
-            weights.add(1.0);
-        } else if (numberOfIntegrationPoints == 3) {
-            nodes.add(Math.sqrt(3.0 / 5.0));
-            weights.add(5.0 / 9.0);
-            nodes.add(0.0);
-            weights.add(8.0 / 9.0);
-            nodes.add(-Math.sqrt(3.0 / 5.0));
-            weights.add(5.0 / 9.0);
-        } else if (numberOfIntegrationPoints == 4) {
-            nodes.add(-0.861136);
-            weights.add(0.347855);
-            nodes.add(-0.339981);
-            weights.add(0.652145);
-            nodes.add(0.339981);
-            weights.add(0.652145);
-            nodes.add(0.861136);
-            weights.add(0.347855);
-        } else if (numberOfIntegrationPoints == 5) {
-            nodes.add(-0.906180);
-            weights.add(0.236927);
-            nodes.add(-0.538469);
-            weights.add(0.478629);
-            nodes.add(0.0);
-            weights.add(0.568889);
-            nodes.add(0.538469);
-            weights.add(0.478629);
-            nodes.add(0.906180);
-            weights.add(0.236927);
-        } else {
-            nodes = null;
-            weights = null;
-            System.out.println("Invalid n");
-        }
-
-        Point[] nodePoints = new Point[nodes.size() * nodes.size()];
-        Point[] weightPoints = new Point[weights.size() * weights.size()];
-
-        int counter = 0;
-        for(int i = 0; i < nodes.size(); i++){
-            for(int j = 0; j < nodes.size(); j++){
-                nodePoints[counter] = new Point(nodes.get(i), nodes.get(j));
-                weightPoints[counter] = new Point(weights.get(i), weights.get(j));
-                counter++;
-            }
-        }
-
-        Container container = new Container(weightPoints, nodePoints);
-        return container;
-    }
-
-    public static Container calculateNodesAndWeights2(int numberOfIntegrationPoints) {
-        //nPoints - zmienna wyznaczajaca ilos pounktow calkowania
-
-        List<Double> nodes = new ArrayList<>();
-        List<Double> weights = new ArrayList<>();
-
-        if (numberOfIntegrationPoints == 2) {
-            nodes.add(1 / Math.sqrt(3));
-            weights.add(1.0);
-            nodes.add(-1 / Math.sqrt(3));
-            weights.add(1.0);
-        } else if (numberOfIntegrationPoints == 3) {
-            nodes.add(Math.sqrt(3.0 / 5.0));
-            weights.add(5.0 / 9.0);
-            nodes.add(0.0);
-            weights.add(8.0 / 9.0);
-            nodes.add(-Math.sqrt(3.0 / 5.0));
-            weights.add(5.0 / 9.0);
-        } else if (numberOfIntegrationPoints == 4) {
-            nodes.add(-0.861136);
-            weights.add(0.347855);
-            nodes.add(-0.339981);
-            weights.add(0.652145);
-            nodes.add(0.339981);
-            weights.add(0.652145);
-            nodes.add(0.861136);
-            weights.add(0.347855);
-        } else if (numberOfIntegrationPoints == 5) {
-            nodes.add(-0.906180);
-            weights.add(0.236927);
-            nodes.add(-0.538469);
-            weights.add(0.478629);
-            nodes.add(0.0);
-            weights.add(0.568889);
-            nodes.add(0.538469);
-            weights.add(0.478629);
-            nodes.add(0.906180);
-            weights.add(0.236927);
-        } else {
-            nodes = null;
-            weights = null;
-            System.out.println("Invalid n");
-        }
-
-        Point[] nodePoints = new Point[nodes.size() * nodes.size()];
-        Point[] weightPoints = new Point[weights.size() * weights.size()];
-
-        int counter = 0;
-        for(int i = 0; i < nodes.size(); i++){
-            for(int j = 0; j < nodes.size(); j++){
-                nodePoints[counter] = new Point(nodes.get(i), nodes.get(j));
-                weightPoints[counter] = new Point(weights.get(i), weights.get(j));
-                counter++;
-            }
-        }
-
-        Container container = new Container(weightPoints, nodePoints);
-        return container;
-    }
-
     public static double[][] calculateH(int index, double[][] nOverX, double[][] nOverY, Point[] weights,double determinant, double conductivity){
         double[][] yRow = Matrix.getRow(index, nOverY);
         double[][] yCol = Matrix.replace2dArrayDimensions(yRow);
@@ -148,45 +18,6 @@ public class Main {
         H = Matrix.multiplyNumberBy2dArray(determinant * conductivity, H);
         H = Matrix.multiplyNumberBy2dArray(weights[index].x * weights[index].y, H);
         return H;
-    }
-
-    public static double integerQuadrature(int N, double upperBoundary, double lowerBoundary, FunctionalInterface functionalInterface){
-        double det = (upperBoundary - lowerBoundary) / 2;
-        List<Double> nodes = new ArrayList<>();
-        List<Double> weight = new ArrayList<>();
-        if(N == 1){
-            nodes.add(1 / Math.sqrt(3));weight.add(1.0);
-            nodes.add(-1 / Math.sqrt(3));weight.add(1.0);
-        }
-        else if (N == 2) {
-            nodes.add(Math.sqrt(3.0 / 5.0));weight.add(5.0 / 9.0);
-            nodes.add(0.0);weight.add(8.0 / 9.0);
-            nodes.add(-Math.sqrt(3.0 / 5.0));weight.add(5.0 / 9.0);
-        }
-        else if (N == 3) {
-            nodes.add(-0.861136);weight.add(0.347855);
-            nodes.add(-0.339981);weight.add(0.652145);
-            nodes.add(0.339981);weight.add(0.652145);
-            nodes.add(0.861136);weight.add(0.347855);
-        }
-        else if (N == 4) {
-            nodes.add(-0.906180);weight.add(0.236927);
-            nodes.add(-0.538469);weight.add(0.478629);
-            nodes.add(0.0);weight.add(0.568889);
-            nodes.add(0.538469);weight.add(0.478629);
-            nodes.add(0.906180);weight.add(0.236927);
-        }
-        else {
-            System.out.println("Invalid n");
-            System.exit(0);
-        }
-
-        double sum = 0.0;
-        for(int i = 0; i < nodes.size(); i++){
-            nodes.set(i, (((1 - nodes.get(i)) / 2) * lowerBoundary) + (((nodes.get(i) + 1) / 2) * upperBoundary));
-            sum += functionalInterface.fun(nodes.get(i)) * weight.get(i) * det;
-        }
-        return sum;
     }
 
     public static void main(String[] args) {
@@ -204,9 +35,8 @@ public class Main {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        Container container = calculateNodesAndWeights(numberOfIntegrationPoints);
-        Point[] weights = container.getWeights();
-        Point[] nodes = container.getNodes();
+        Point[] weights = MathFunctions.nodesAndCoefficientsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints).getCoefficientPoints();
+        Point[] nodes = MathFunctions.nodesAndCoefficientsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints).getNodePoints();
 
         UniversalElement universalElement = new UniversalElement(nodes, nDSF);
         universalElement.setNOverKsi(Matrix.transformHorizontally2dArray(universalElement.getNOverKsi()));
@@ -258,18 +88,59 @@ public class Main {
         nodes = container.getNodes();
         universalElement = new UniversalElement(nodes, nDSF);*/
 
-        weights = container.getWeights();
-        nodes = container.getNodes();
+        //weights = container.getWeights();
+        //nodes = container.getNodes();
 
         //DALA JEDNEJ SCIANY KTORA JEST SCIANA BRZEGOWA
-        Point[] dummyPoints = {new Point(-1,0.5773), new Point(-1,-0.5773)};//0.7886
+        //Point[] dummyPoints = {new Point(-1,0.5773), new Point(-1,-0.5773)};//0.7886
+
+        int numberOfIntegrationPointsOnSide = 2;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
+
+        double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
+
+
+        System.out.println("lelleaesdasd");
+        Point[] dummyPoints = new Point[numberOfIntegrationPointsOnSide * 4];
+        int [] sidesValues = {-1, 1, 1, -1};
+        //                     y  x  y   x
+        int counter = 0;
+        //bok dol
+        for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
+            dummyPoints[counter] = new Point(nodes2[i], -1);
+            counter++;
+        }
+        //bok prawo
+        for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
+            dummyPoints[counter] = new Point(1, nodes2[i]);
+            counter++;
+        }
+        //bok gora
+        for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
+            dummyPoints[counter] = new Point(nodes2[i], 1);
+            counter++;
+        }
+        //bok lewo
+        for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
+            dummyPoints[counter] = new Point(-1, nodes2[i]);
+            counter++;
+        }
+
+
+
+
+
+
+        for(Point p : dummyPoints){
+            System.out.println(p.x + " " + p.y);
+        }
+
+        System.out.println("-------");
         double[] dummyWeights = {1 ,1};//0.7886
         Point[] dummyNodes = {new Point(0,0), new Point(0.025,0), new Point(0.025,0.025), new Point(0,0.025)};
         double[][] nArray = new double[dummyPoints.length][nDSF];
 
         double detJ = MathFunctions.distance(dummyNodes[0], dummyNodes[1]) / 2.0;
         double alfa = 25.0;
-        int numberOfIntegrationPointsOnSide = dummyPoints.length;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
 
         double [][] HBC = new double[nDSF][nDSF];
 
@@ -307,10 +178,5 @@ public class Main {
         //+
         //bug w funkcji do transponowania (replace2dArrayDimensions) w Matrix
         */
-
-
-
-
-
     }
 }
