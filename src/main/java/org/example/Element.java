@@ -9,6 +9,7 @@ public class Element {
     private int[] nodeIds;
 
     private double[][] H;
+    private double[][] HBC;
 
     public Element(int elementId, int[] ID) {
         this.elementId = elementId;

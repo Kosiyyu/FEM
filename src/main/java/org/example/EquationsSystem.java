@@ -12,7 +12,7 @@ public class EquationsSystem {
         this.HG = new double[size][size];
     }
 
-    public void add(Element e){
+    public void addH(Element e){
         int []nodeIDs = e.getNodeIds();
         double [][] H = e.getH();
 
@@ -20,6 +20,18 @@ public class EquationsSystem {
             for (int j = 0; j < H[0].length; j++){
                 //System.out.println(nodeIDs[i] - 1 + " " + (nodeIDs[j] - 1));
                 HG[nodeIDs[i] - 1][nodeIDs[j] - 1] += H[i][j];
+            }
+        }
+    }
+
+    public void addHBC(Element e){
+        int []nodeIDs = e.getNodeIds();
+        double [][] HBC = e.getHBC();
+
+        for(int i = 0; i < HBC.length; i++){
+            for (int j = 0; j < HBC[0].length; j++){
+                //System.out.println(nodeIDs[i] - 1 + " " + (nodeIDs[j] - 1));
+                HG[nodeIDs[i] - 1][nodeIDs[j] - 1] += HBC[i][j];
             }
         }
     }

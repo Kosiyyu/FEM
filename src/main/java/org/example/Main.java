@@ -1,7 +1,5 @@
 package org.example;
 
-import lombok.Data;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,9 +21,9 @@ public class Main {
     public static void main(String[] args) {
         GlobalData globalData;
         Grid grid;
-        String fileName = "test.txt";
+        String fileName = "test2.txt";
 
-        int numberOfIntegrationPoints = 2;//liczba punktow calkowania
+        int numberOfIntegrationPoints = 5;//liczba punktow calkowania
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         DataImporter dataImporter = new DataImporter();
@@ -79,27 +77,25 @@ public class Main {
                 resultH = Matrix.add2dArrays(resultH, H);
             }
             grid.getElements()[resultElementCounter].setH(resultH);//zapisywanie do elementow
-            equationsSystem.add(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
+            equationsSystem.addH(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
         }
-        //Matrix.print2dArray(equationsSystem.getHG());
+        Matrix.print2dArray(equationsSystem.getHG());
 
-/*        container = calculateNodesAndWeights(numberOfIntegrationPoints);
-        weights = container.getWeights();
-        nodes = container.getNodes();
-        universalElement = new UniversalElement(nodes, nDSF);*/
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //ponizej warunki brzegowe liczymy
 
-        //weights = container.getWeights();
-        //nodes = container.getNodes();
 
-        //DALA JEDNEJ SCIANY KTORA JEST SCIANA BRZEGOWA
-        //Point[] dummyPoints = {new Point(-1,0.5773), new Point(-1,-0.5773)};//0.7886
+
+
+
+
 
         int numberOfIntegrationPointsOnSide = 5;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
 
         double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
 
 
-        System.out.println("lelleaesdasd");
         Point[] dummyPoints = new Point[numberOfIntegrationPointsOnSide * 4];
         int [] sidesValues = {-1, 1, 1, -1};
         //                     y  x  y   x
@@ -126,60 +122,102 @@ public class Main {
         }
 
 
-
-
-
-
-/*        for(Point p : dummyPoints){
-            System.out.println(p.x + " " + p.y);
-        }
-
-        System.out.println("-------");*/
-
-
         double[] dummyWeights = MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide);
-        Point[] dummyNodes = {new Point(0,0), new Point(0.025,0), new Point(0.025,0.025), new Point(0,0.025)};
+        Node[] dummyNodes = {new Node(0,0), new Node(0.025,0), new Node(0.025,0.025), new Node(0,0.025)};
         double[][] nArray = new double[numberOfIntegrationPointsOnSide][nDSF];
-        double alfa = 25.0;
+        double alfa = 300.0;
+        boolean bCFlag = false;
 
-        for(int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
-            double[][] HBC = new double[nDSF][nDSF];
-            //System.out.println(x);
 
-            double detJ;
-            if(x != 3){
-                detJ = MathFunctions.distance(dummyNodes[x], dummyNodes[x + 1]) / 2.0;
+        //petla po elementach
+
+        for(int elementId = 0; elementId < grid.getElements().length; elementId++) {
+            //wyciaganei node'ow z danego elementu
+            int[] nodeIds = grid.getElements()[elementId].getNodeIds();
+            Node[] resultNodes = new Node[4];
+            for (int i = 0; i < resultNodes.length; i++) {
+                final int finalI = i;
+                Node n = Arrays.stream(grid.getNodes()).collect(Collectors.toList()).stream()
+                        .filter(node -> node.getNodeId() == nodeIds[finalI])
+                        .findFirst()
+                        .get();//error for null!!!
+                resultNodes[i] = n;
             }
-            else {
-                detJ = MathFunctions.distance(dummyNodes[3], dummyNodes[0]) / 2.0;
-            }
-            double[][] row = new double[0][];
-            double[][] transRow = new double[0][];
-            for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
-                double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
-                double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
-                //System.out.println(ksi + " " + eta);
-                for (int j = 0; j < nDSF; j++) {
-                    if (j == 0) {
-                        nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
-                    } else if (j == 1) {
-                        nArray[i][j] = 0.25 * (1 + ksi) * (1 - eta);
-                    } else if (j == 2) {
-                        nArray[i][j] = 0.25 * (1 + ksi) * (1 + eta);
-                    } else if (j == 3) {
-                        nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
+
+            //resultNodes = dummyNodes;
+
+
+
+            //HBC dla kazdego boku
+            double[][] resultHBC = new double[nDSF][nDSF];
+            for (int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
+                double[][] HBC = new double[nDSF][nDSF];
+                //System.out.println(x);
+
+                double detJ;
+                if (x != 3) {
+                    detJ = MathFunctions.distance(resultNodes[x], resultNodes[x + 1]) / 2.0;
+                    if (resultNodes[x].getBC() == 1 && resultNodes[x + 1].getBC() == 1) {
+                        bCFlag = true;
+                    }
+                } else {
+                    detJ = MathFunctions.distance(resultNodes[3], resultNodes[0]) / 2.0;
+                    if (resultNodes[3].getBC() == 1 && resultNodes[0].getBC() == 1) {
+                        bCFlag = true;
                     }
                 }
-                //Matrix.print2dArray(nArray);
-                row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
-                transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(alfa * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+
+                //jezeli warunek brzegowy wystepuje to liczmy HBC
+                System.out.println(bCFlag);
+
+
+                if (bCFlag) {
+                    double[][] row = new double[0][];
+                    double[][] transRow = new double[0][];
+                    for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
+                        double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
+                        double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
+                        //System.out.println(ksi + " " + eta);
+                        for (int j = 0; j < nDSF; j++) {
+                            if (j == 0) {
+                                nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
+                            } else if (j == 1) {
+                                nArray[i][j] = 0.25 * (1 + ksi) * (1 - eta);
+                            } else if (j == 2) {
+                                nArray[i][j] = 0.25 * (1 + ksi) * (1 + eta);
+                            } else if (j == 3) {
+                                nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
+                            }
+                        }
+                        //Matrix.print2dArray(nArray);
+                        row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
+                        transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
+                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(alfa * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+                    }
+                    //System.out.println(x);
+                    //Matrix.print2dArray(nArray);
+                    //Matrix.print2dArray(HBC);//dobrze wychodzi
+                    resultHBC = Matrix.add2dArrays(resultHBC, HBC);
+                    bCFlag = false;
+                }
             }
-            //System.out.println(x);
-            //Matrix.print2dArray(nArray);
-            Matrix.print2dArray(HBC);//dobrze wychodzi
-            //tera trzeba powtorzyc dla innych bokow
+            grid.getElements()[elementId].setHBC(resultHBC);
+            equationsSystem.addHBC(grid.getElements()[elementId]);
+            System.out.println(elementId);
         }
+
+        Matrix.print2dArray(equationsSystem.getHG());
+
+
+
+
+
+
+
+
+
+
+
 
 
         /*  BUG!!! DEL WHEN FIXED

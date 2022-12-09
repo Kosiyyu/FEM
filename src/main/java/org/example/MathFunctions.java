@@ -23,6 +23,10 @@ public class MathFunctions {
         return Math.sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
     }
 
+    public static double distance(Node p1, Node p2){
+        return Math.sqrt((p2.getX() - p1.getX()) * (p2.getX() - p1.getX()) + (p2.getY() - p1.getY()) * (p2.getY() - p1.getY()));
+    }
+
     public static double integerQuadrature(int N, double upperBoundary, double lowerBoundary, FunctionalInterface functionalInterface){
         double det = (upperBoundary - lowerBoundary) / 2;
         List<Double> nodes = new ArrayList<>();
