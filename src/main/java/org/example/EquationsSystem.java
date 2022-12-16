@@ -6,10 +6,12 @@ import lombok.Data;
 public class EquationsSystem {
 
     private double[][] HG;
+    private double[][] PG;
 
     private int size;
     public EquationsSystem(int size) {
         this.HG = new double[size][size];
+        this.PG = new double[size][1];
     }
 
     public void addH(Element e){
@@ -32,6 +34,18 @@ public class EquationsSystem {
             for (int j = 0; j < HBC[0].length; j++){
                 //System.out.println(nodeIDs[i] - 1 + " " + (nodeIDs[j] - 1));
                 HG[nodeIDs[i] - 1][nodeIDs[j] - 1] += HBC[i][j];
+            }
+        }
+    }
+
+    public void addP(Element e) {
+        int []nodeIDs = e.getNodeIds();
+        double [][] P = e.getP();
+        for(int i = 0; i < P.length; i++){
+            for (int j = 0; j < P[0].length; j++){
+                System.out.println(j);
+                //System.out.println(nodeIDs[i] - 1 + " " + (nodeIDs[j] - 1));
+                PG[nodeIDs[i] - 1][j] += P[i][j];
             }
         }
     }

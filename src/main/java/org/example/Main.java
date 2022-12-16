@@ -21,9 +21,9 @@ public class Main {
     public static void main(String[] args) {
         GlobalData globalData;
         Grid grid;
-        String fileName = "test2.txt";
+        String fileName = "test.txt";
 
-        int numberOfIntegrationPoints = 5;//liczba punktow calkowania
+        int numberOfIntegrationPoints = 2;//liczba punktow calkowania
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         DataImporter dataImporter = new DataImporter();
@@ -91,7 +91,7 @@ public class Main {
 
 
 
-        int numberOfIntegrationPointsOnSide = 5;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
+        int numberOfIntegrationPointsOnSide = 2;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
 
         double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
 
@@ -125,12 +125,11 @@ public class Main {
         double[] dummyWeights = MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide);
         Node[] dummyNodes = {new Node(0,0), new Node(0.025,0), new Node(0.025,0.025), new Node(0,0.025)};
         double[][] nArray = new double[numberOfIntegrationPointsOnSide][nDSF];
-        double alfa = 300.0;
         boolean bCFlag = false;
 
 
         //petla po elementach
-
+        double[][] test = new double[4][1];
         for(int elementId = 0; elementId < grid.getElements().length; elementId++) {
             //wyciaganei node'ow z danego elementu
             int[] nodeIds = grid.getElements()[elementId].getNodeIds();
@@ -150,8 +149,10 @@ public class Main {
 
             //HBC dla kazdego boku
             double[][] resultHBC = new double[nDSF][nDSF];
+            double[][] resultP = new double[nDSF][1];
             for (int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
                 double[][] HBC = new double[nDSF][nDSF];
+                double[][] P = new double[nDSF][1];
                 //System.out.println(x);
 
                 double detJ;
@@ -168,7 +169,7 @@ public class Main {
                 }
 
                 //jezeli warunek brzegowy wystepuje to liczmy HBC
-                System.out.println(bCFlag);
+                //System.out.println(bCFlag);
 
 
                 if (bCFlag) {
@@ -192,21 +193,59 @@ public class Main {
                         //Matrix.print2dArray(nArray);
                         row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
                         transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(alfa * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
                     }
                     //System.out.println(x);
                     //Matrix.print2dArray(nArray);
                     //Matrix.print2dArray(HBC);//dobrze wychodzi
                     resultHBC = Matrix.add2dArrays(resultHBC, HBC);
+
+
+
+                    //tutaj operacje dla wektora P
+                    for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
+                        double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
+                        double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
+                        //System.out.println(ksi + " " + eta);
+                        for (int j = 0; j < nDSF; j++) {
+                            if (j == 0) {
+                                nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
+                            } else if (j == 1) {
+                                nArray[i][j] = 0.25 * (1 + ksi) * (1 - eta);
+                            } else if (j == 2) {
+                                nArray[i][j] = 0.25 * (1 + ksi) * (1 + eta);
+                            } else if (j == 3) {
+                                nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
+                            }
+                        }
+                        P = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
+                        P = Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * globalData.getTot() * detJ * dummyWeights[i], P);//na sztywno
+                        //Matrix.print2dArray(P);
+                        resultP = Matrix.add2dArrays(resultP, P);
+                    }
+
+
+
+
+
+
+
+
+
+
                     bCFlag = false;
                 }
             }
+            //
             grid.getElements()[elementId].setHBC(resultHBC);
             equationsSystem.addHBC(grid.getElements()[elementId]);
-            System.out.println(elementId);
-        }
 
+            grid.getElements()[elementId].setP(resultP);
+            equationsSystem.addP(grid.getElements()[elementId]);
+
+        }
         Matrix.print2dArray(equationsSystem.getHG());
+        Matrix.print2dArray(equationsSystem.getPG());
 
 
 
