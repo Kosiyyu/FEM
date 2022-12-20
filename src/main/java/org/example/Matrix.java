@@ -10,6 +10,13 @@ public class Matrix {
         return arr;
     }
 
+    public static double [][] setRow(int index, double[][] pass, double[][] row){
+        for(int i = 0; i < pass[0].length; i++){
+            pass[index][i] = row[0][i];
+        }
+        return pass;
+    }
+
     public static double [][] getColumn(int index, double[][] pass){
         double [][] arr = new double[pass.length][1];
         for(int i = 0; i < arr.length; i++){
