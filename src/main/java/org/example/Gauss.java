@@ -29,11 +29,8 @@ public class Gauss {
                 double[][] currentRow = Matrix.getRow(j, resultMatrix);
                 if(currentRow[0][i] != 0){
                     double value = currentRow[0][i] / row[0][i];
-                    System.out.println("value: " + currentRow[0][i] + "/" + row[0][i] + " = " + value);
                     currentRow = Matrix.subtract2dArrays(currentRow, Matrix.multiplyNumberBy2dArray(value, row));
-                    Matrix.print2dArray(currentRow);
                     calculationMatrix = Matrix.setRow(j, calculationMatrix, currentRow);
-                    Matrix.print2dArray(calculationMatrix);
                 }
             }
         }

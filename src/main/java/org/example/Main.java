@@ -247,6 +247,9 @@ public class Main {
         Matrix.print2dArray(equationsSystem.getHG());
         Matrix.print2dArray(equationsSystem.getPG());
 
+        Gauss gauss = new Gauss(equationsSystem.getHG(), equationsSystem.getPG());
+        Matrix.print2dArray(gauss.calculate());
+
 
 
 
