@@ -52,12 +52,12 @@ public class Main {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        int numberOfIntegrationPoints = 3;//liczba punktow calkowania
+        int numberOfIntegrationPoints = 4;//liczba punktow calkowaniax
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPoints), nDSF);
-        universalElement.setNOverKsi(Matrix.transformHorizontally2dArray(universalElement.getNOverKsi()));
-        universalElement.setNOverEta(Matrix.transformVertically2dArray(universalElement.getNOverEta()));
+        //universalElement.setNOverKsi(Matrix.transformHorizontally2dArray(universalElement.getNOverKsi()));
+        //universalElement.setNOverEta(Matrix.transformVertically2dArray(universalElement.getNOverEta()));
 
         for(int resultElementCounter = 0; resultElementCounter < grid.getElements().length; resultElementCounter++) {
             int []nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
@@ -76,13 +76,18 @@ public class Main {
 
             for(int resultNodesCounter = 0; resultNodesCounter < numberOfIntegrationPoints * numberOfIntegrationPoints; resultNodesCounter++) {
 
-                double x = 0.0;
-                double y = 0.0;
+                double xOverKsi = 0.0;
+                double yOverKsi = 0.0;
+                double yOverEta = 0.0;
+                double xOverEta = 0.0;
                 for (int i = 0; i < resultNodes.length; i++) {
-                    x += resultNodes[i].getX() * universalElement.getNOverKsi()[resultNodesCounter][i];
-                    y += resultNodes[i].getY() * universalElement.getNOverEta()[resultNodesCounter][i];
+                    xOverKsi += resultNodes[i].getX() * universalElement.getNOverKsi()[resultNodesCounter][i];
+                    yOverKsi += resultNodes[i].getY() * universalElement.getNOverKsi()[resultNodesCounter][i];
+                    yOverEta += resultNodes[i].getY() * universalElement.getNOverEta()[resultNodesCounter][i];
+                    xOverEta += resultNodes[i].getX() * universalElement.getNOverEta()[resultNodesCounter][i];
                 }
-                double[][] jacobi = {{x, 0}, {0, y}};
+                //double[][] jacobi = {{xOverKsi, yOverKsi}, {xOverEta, yOverEta}};
+                double[][] jacobi = {{xOverKsi, yOverKsi}, {xOverEta, yOverEta}};
                 double determinant = jacobi[0][0] * jacobi[1][1] - jacobi[0][1] * jacobi[1][0];
                 double[][] inverseJacobi = Matrix.multiplyNumberBy2dArray(1.0 / determinant, jacobi);
                 double nOverX[][] = new double[numberOfIntegrationPoints * numberOfIntegrationPoints][nDSF];
@@ -99,9 +104,18 @@ public class Main {
 
                 double[][] C = calculateC(resultNodesCounter, universalElement.getNShapeValue(), universalElement.getWeightsX(), universalElement.getWeightsY(), determinant, globalData.getSpecificHeat(), globalData.getDensity());
                 resultC = Matrix.add2dArrays(resultC, C);
+
+                Matrix.print2dArray(jacobi);
+                System.out.println(determinant);
             }
+            //Matrix.print2dArray(resultH);
+            System.out.println("---");
+
+
             grid.getElements()[resultElementCounter].setH(resultH);//zapisywanie do elementow
             equationsSystem.addH(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
+
+            //Matrix.print2dArray(resultH);
 
             grid.getElements()[resultElementCounter].setC(resultC);//zapisywanie do elementow
             equationsSystem.addC(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
@@ -267,7 +281,7 @@ public class Main {
             equationsSystem.addP(grid.getElements()[elementId]);
 
         }
-        Matrix.print2dArray(equationsSystem.getHG());//pod dodaniu hbc
+        //Matrix.print2dArray(equationsSystem.getHG());//pod dodaniu hbc
         //Matrix.print2dArray(equationsSystem.getCG());
         //Matrix.print2dArray(equationsSystem.getPG());
 
