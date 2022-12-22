@@ -11,6 +11,7 @@ public class Element {
     private double[][] H;
     private double[][] HBC;
     private double[][] P;
+    private double[][] C;
 
     public Element(int elementId, int[] ID) {
         this.elementId = elementId;

@@ -164,7 +164,6 @@ public class MathFunctions {
             nodes = null;
             System.out.println("Invalid n");
         }
-
         return nodesArray;
     }
 

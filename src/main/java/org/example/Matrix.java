@@ -1,5 +1,8 @@
 package org.example;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class Matrix {
 
     public static double [][] getRow(int index, double[][] pass){
@@ -167,6 +170,34 @@ public class Matrix {
             }
         }
         return ab;
+    }
+
+    public static double[][] createTemperatureVector(int size, double value){
+        double[][] arr = new double[size][1];
+        for(int i = 0; i < arr.length; i++){
+            arr[i][0] = value;
+        }
+        return arr;
+    }
+
+    public static double minValueInVector(double pass[][]){
+        double min = pass[0][0];
+        for(int i = 0; i < pass.length; i++){
+            if(pass[i][0] < min){
+                min = pass[i][0];
+            }
+        }
+        return min;
+    }
+
+    public static double maxValueInVector(double pass[][]){
+        double max = pass[0][0];
+        for(int i = 0; i < pass.length; i++){
+            if(pass[i][0] > max){
+                max = pass[i][0];
+            }
+        }
+        return max;
     }
 
 }

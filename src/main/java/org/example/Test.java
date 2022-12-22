@@ -18,5 +18,11 @@ public class Test {
 
         Gauss gauss = new Gauss(matrix, vector);
         Matrix.print2dArray(gauss.calculate());
+
+        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(2), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(2),4);
+        double[][] flag = universalElement.getNShapeValue();
+        Matrix.print2dArray(flag);
+        Matrix.print2dArray(Matrix.getRow(0, flag));
+
     }
 }

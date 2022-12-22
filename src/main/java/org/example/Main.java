@@ -18,13 +18,32 @@ public class Main {
         return H;
     }
 
+    public static double[][] calculateH(int index, double[][] nOverX, double[][] nOverY, double[] weightsX, double[] weightsY, double determinant, double conductivity){
+        double[][] yRow = Matrix.getRow(index, nOverY);
+        double[][] yCol = Matrix.replace2dArrayDimensions(yRow);
+        double[][] xRow = Matrix.getRow(index, nOverX);
+        double[][] xCol = Matrix.replace2dArrayDimensions(xRow);
+        double[][] yColumnMultipliedByYRow = Matrix.multiply2dArrays(yCol, yRow);
+        double[][] xColumnMultipliedByXRow = Matrix.multiply2dArrays(xCol, xRow);
+        double[][] H = Matrix.add2dArrays(xColumnMultipliedByXRow, yColumnMultipliedByYRow);
+        H = Matrix.multiplyNumberBy2dArray(determinant * conductivity, H);
+        H = Matrix.multiplyNumberBy2dArray(weightsX[index] * weightsY[index], H);
+        return H;
+    }
+
+    public static double[][] calculateC(int index, double[][] nShapeValue, double[] weightsX, double[] weightsY, double determinant, double specificHeat, double density){
+        double[][] row = Matrix.getRow(index, nShapeValue);
+        double[][] col = Matrix.replace2dArrayDimensions(row);
+        double[][] C = Matrix.multiply2dArrays(col, row);
+        C = Matrix.multiplyNumberBy2dArray(determinant * specificHeat * density, C);
+        C = Matrix.multiplyNumberBy2dArray(weightsX[index] * weightsY[index], C);
+        return C;
+    }
+
     public static void main(String[] args) {
         GlobalData globalData;
         Grid grid;
         String fileName = "test.txt";
-
-        int numberOfIntegrationPoints = 2;//liczba punktow calkowania
-        int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
         DataImporter dataImporter = new DataImporter();
         dataImporter.importData(fileName);
@@ -33,10 +52,10 @@ public class Main {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        Point[] weights = MathFunctions.nodesAndCoefficientsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints).getCoefficientPoints();
-        Point[] nodes = MathFunctions.nodesAndCoefficientsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints).getNodePoints();
+        int numberOfIntegrationPoints = 3;//liczba punktow calkowania
+        int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
-        UniversalElement universalElement = new UniversalElement(nodes, nDSF);
+        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPoints), nDSF);
         universalElement.setNOverKsi(Matrix.transformHorizontally2dArray(universalElement.getNOverKsi()));
         universalElement.setNOverEta(Matrix.transformVertically2dArray(universalElement.getNOverEta()));
 
@@ -53,8 +72,9 @@ public class Main {
             }
 
             double [][]resultH = new double[nDSF][nDSF];
+            double [][]resultC = new double[nDSF][nDSF];
 
-            for(int resultNodesCounter = 0; resultNodesCounter < nodes.length; resultNodesCounter++) {
+            for(int resultNodesCounter = 0; resultNodesCounter < numberOfIntegrationPoints * numberOfIntegrationPoints; resultNodesCounter++) {
 
                 double x = 0.0;
                 double y = 0.0;
@@ -65,21 +85,27 @@ public class Main {
                 double[][] jacobi = {{x, 0}, {0, y}};
                 double determinant = jacobi[0][0] * jacobi[1][1] - jacobi[0][1] * jacobi[1][0];
                 double[][] inverseJacobi = Matrix.multiplyNumberBy2dArray(1.0 / determinant, jacobi);
-                double nOverX[][] = new double[nodes.length][nDSF];
-                double nOverY[][] = new double[nodes.length][nDSF];
-                for (int i = 0; i < nodes.length; i++) {
+                double nOverX[][] = new double[numberOfIntegrationPoints * numberOfIntegrationPoints][nDSF];
+                double nOverY[][] = new double[numberOfIntegrationPoints * numberOfIntegrationPoints][nDSF];
+                for (int i = 0; i < numberOfIntegrationPoints * numberOfIntegrationPoints; i++) {
                     for (int j = 0; j < nDSF; j++) {
                         nOverX[i][j] = inverseJacobi[0][1] * universalElement.getNOverKsi()[i][j] + inverseJacobi[1][1] * universalElement.getNOverKsi()[i][j];
                         nOverY[i][j] = inverseJacobi[0][0] * universalElement.getNOverEta()[i][j] + inverseJacobi[1][0] * universalElement.getNOverEta()[i][j];
                     }
                 }
-                double[][] H = calculateH(resultNodesCounter, nOverX, nOverY, weights, determinant, globalData.getConductivity());
+                //double[][] H = calculateH(resultNodesCounter, nOverX, nOverY, weights, determinant, globalData.getConductivity());
+                double[][] H = calculateH(resultNodesCounter, nOverX, nOverY, universalElement.getWeightsX(), universalElement.getWeightsY(), determinant, globalData.getConductivity());
                 resultH = Matrix.add2dArrays(resultH, H);
+
+                double[][] C = calculateC(resultNodesCounter, universalElement.getNShapeValue(), universalElement.getWeightsX(), universalElement.getWeightsY(), determinant, globalData.getSpecificHeat(), globalData.getDensity());
+                resultC = Matrix.add2dArrays(resultC, C);
             }
             grid.getElements()[resultElementCounter].setH(resultH);//zapisywanie do elementow
             equationsSystem.addH(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
+
+            grid.getElements()[resultElementCounter].setC(resultC);//zapisywanie do elementow
+            equationsSystem.addC(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
         }
-        Matrix.print2dArray(equationsSystem.getHG());
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,8 +123,7 @@ public class Main {
 
 
         Point[] dummyPoints = new Point[numberOfIntegrationPointsOnSide * 4];
-        int [] sidesValues = {-1, 1, 1, -1};
-        //                     y  x  y   x
+
         int counter = 0;
         //bok dol
         for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
@@ -122,8 +147,6 @@ public class Main {
         }
 
 
-        double[] dummyWeights = MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide);
-        Node[] dummyNodes = {new Node(0,0), new Node(0.025,0), new Node(0.025,0.025), new Node(0,0.025)};
         double[][] nArray = new double[numberOfIntegrationPointsOnSide][nDSF];
         boolean bCFlag = false;
 
@@ -193,7 +216,7 @@ public class Main {
                         //Matrix.print2dArray(nArray);
                         row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
                         transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * dummyWeights[i], Matrix.multiply2dArrays(transRow, row))));
+                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide)[i], Matrix.multiply2dArrays(transRow, row))));
                     }
                     //System.out.println(x);
                     //Matrix.print2dArray(nArray);
@@ -219,7 +242,7 @@ public class Main {
                             }
                         }
                         P = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                        P = Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * globalData.getTot() * detJ * dummyWeights[i], P);//na sztywno
+                        P = Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * globalData.getTot() * detJ * MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide)[i], P);//na sztywno
                         //Matrix.print2dArray(P);
                         resultP = Matrix.add2dArrays(resultP, P);
                     }
@@ -244,15 +267,37 @@ public class Main {
             equationsSystem.addP(grid.getElements()[elementId]);
 
         }
-        Matrix.print2dArray(equationsSystem.getHG());
-        Matrix.print2dArray(equationsSystem.getPG());
+        Matrix.print2dArray(equationsSystem.getHG());//pod dodaniu hbc
+        //Matrix.print2dArray(equationsSystem.getCG());
+        //Matrix.print2dArray(equationsSystem.getPG());
 
         Gauss gauss = new Gauss(equationsSystem.getHG(), equationsSystem.getPG());
-        Matrix.print2dArray(gauss.calculate());
+        //Matrix.print2dArray(gauss.calculate());
+
+/*        double[][] t0 = Matrix.createTemperatureVector(16, globalData.getInitialTemp());
+        double[][] newH = Matrix.add2dArrays(equationsSystem.getHG(), Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()));
+        double[][] newP = Matrix.add2dArrays(equationsSystem.getPG(), Matrix.multiply2dArrays( Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()), t0));
+        double[][] t1 = Gauss.calculate(newH, newP);*/
+
+        double[][] t0 = Matrix.createTemperatureVector(grid.getNumberOfNodes(), globalData.getInitialTemp());
+        double[][] newH;
+        double[][] newP;
+        double[][] t1;
 
 
 
 
+        int limit = 10;
+
+        for(int i = 1; i < limit + 1 ;i++){
+            newH = Matrix.add2dArrays(equationsSystem.getHG(), Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()));
+            //System.out.println(t0.length + " " + t0[0].length);
+            newP = Matrix.add2dArrays(equationsSystem.getPG(), Matrix.multiply2dArrays( Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()), t0));
+            t1 = Gauss.calculate(newH, newP);
+            //Matrix.print2dArray(t1);
+            System.out.println(i + ". time: " + i * globalData.getSimulationStepTime() + ", min: " + Matrix.minValueInVector(t1) + ", max: " + Matrix.maxValueInVector(t1));
+            t0 = t1;
+        }
 
 
 
