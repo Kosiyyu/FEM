@@ -43,7 +43,7 @@ public class Main {
     public static void main(String[] args) {
         GlobalData globalData;
         Grid grid;
-        String fileName = "test.txt";
+        String fileName = "test1.txt";
 
         DataImporter dataImporter = new DataImporter();
         dataImporter.importData(fileName);
@@ -301,7 +301,7 @@ public class Main {
 
 
 
-        int limit = 10;
+        int limit = (int)((globalData.getSimulationTime() / globalData.getSimulationStepTime()));
 
         for(int i = 1; i < limit + 1 ;i++){
             newH = Matrix.add2dArrays(equationsSystem.getHG(), Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()));
