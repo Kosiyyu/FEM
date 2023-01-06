@@ -4,31 +4,28 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class Test {
+
+    public static double N1(double ksi, double eta)
+    {
+        return 0.25 * (1 - ksi) * (1 - eta);
+    }
+
+    public static double N2(double ksi, double eta)
+    {
+        return 0.25 * (1 + ksi) * (1 - eta);
+    }
+
+    public static double N3(double ksi, double eta)
+    {
+        return 0.25 * (1 + ksi) * (1 + eta);
+    }
+
+    public static double N4(double ksi, double eta)
+    {
+        return 0.25 * (1 - ksi) * (1 + eta);
+    }
     public static void main(String[] args) {
-        double [][] matrix = {
-                {9.0, 4.0, 3.0, 2.0},
-                {8.0, 4.0, -1.0, 7.0},
-                {4.0, 1.0, 1.0, 1.0},
-                {3.0, 11.0, 2.0, -6.0}
-        };
-
-        double [][] vector = {
-                {9.0},
-                {9.0},
-                {9.0},
-                {9.0}
-        };
-
-        Gauss gauss = new Gauss(matrix, vector);
-        //Matrix.print2dArray(gauss.calculate());
-
-        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(2), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(2),4);
-        double[][] flag = universalElement.getNShapeValue();
-        //Matrix.print2dArray(flag);
-        //Matrix.print2dArray(Matrix.getRow(0, flag));
-
-
-
+    //ZAD 1
         GlobalData globalData;
         Grid grid;
         String fileName = "test2.txt";
@@ -40,42 +37,33 @@ public class Test {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        int numberOfIntegrationPoints = 4;//liczba punktow calkowaniax
+        int numberOfIntegrationPoints = 2;//liczba punktow calkowaniax
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
-        for(int resultElementCounter = 0; resultElementCounter < grid.getElements().length; resultElementCounter++) {
-            int []nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
-            Node[] resultNodes = new Node[4];
-            for (int i = 0; i < resultNodes.length; i++){
-                final int finalI = i;
-                Node n = Arrays.stream(grid.getNodes()).collect(Collectors.toList()).stream()
-                        .filter(node -> node.getNodeId() == nodeIds[finalI])
-                        .findFirst()
-                        .get();//error for null!!!
-                resultNodes[i] = n;
-            }
+        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPoints), nDSF);
 
-        double xOverKsi = 0.0;
-        double yOverKsi = 0.0;
-        double yOverEta = 0.0;
-        double xOverEta = 0.0;
-        for (int i = 0; i < resultNodes.length; i++) {
-            xOverKsi += resultNodes[i].getX() * universalElement.getNOverKsi()[0][i];
-            yOverKsi += resultNodes[i].getY() * universalElement.getNOverKsi()[0][i];
-            yOverEta += resultNodes[i].getY() * universalElement.getNOverEta()[0][i];
-            xOverEta += resultNodes[i].getX() * universalElement.getNOverEta()[0][i];
+        Matrix.print2dArray((universalElement.getDeltaNOverDeltaKsi()));
+        Matrix.print2dArray((universalElement.getDeltaNOverDeltaEta()));
+        Matrix.print2dArray((universalElement.getN()));
+        for(double d : universalElement.getPointsX()){
+            System.out.println(d);
         }
-        double[][] jacobi = {{xOverKsi, yOverKsi}, {xOverEta, yOverEta}};
-        double determinant = jacobi[0][0] * jacobi[1][1] - jacobi[0][1] * jacobi[1][0];
-        double[][] inverseJacobi = Matrix.multiplyNumberBy2dArray(1.0 / determinant, jacobi);
-        double nOverX[][] = new double[numberOfIntegrationPoints * numberOfIntegrationPoints][nDSF];
-        double nOverY[][] = new double[numberOfIntegrationPoints * numberOfIntegrationPoints][nDSF];
-        for (int i = 0; i < numberOfIntegrationPoints * numberOfIntegrationPoints; i++) {
-            for (int j = 0; j < nDSF; j++) {
-                nOverX[i][j] = inverseJacobi[0][1] * universalElement.getNOverKsi()[i][j] + inverseJacobi[1][1] * universalElement.getNOverKsi()[i][j];
-                nOverY[i][j] = inverseJacobi[0][0] * universalElement.getNOverEta()[i][j] + inverseJacobi[1][0] * universalElement.getNOverEta()[i][j];
-            }
+        System.out.println("aaaaa");
+        for(double d : universalElement.getPointsY()){
+            System.out.println(d);
         }
-            System.out.println(determinant);
+        System.out.println("aaaaa");
+
+
+
+//        double [][] a = {
+//                {1,1,1,1},
+//                {1,2,1,1},
+//                {1,1,3,1},
+//                {1,1,1,4}};
+//
+//        Matrix.print2dArray(a);
+//        Matrix.print2dArray(Matrix.transformVertically2dArray(a));
+
     }
-}}
+}

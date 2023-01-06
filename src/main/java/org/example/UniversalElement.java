@@ -2,17 +2,14 @@ package org.example;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 public class UniversalElement {
 
-    private double[][] nOverKsi;
+    private double[][] deltaNOverDeltaKsi;
 
-    private double[][] nOverEta;
+    private double[][] deltaNOverDeltaEta;
 
-    private double[][] nShapeValue;
+    private double[][] N;
 
     private double[] pointsX;
 
@@ -22,37 +19,10 @@ public class UniversalElement {
 
     private double[] weightsY;
 
-    public UniversalElement(Point[] points, int nDSF) {
-        this.nOverKsi = new double[points.length][nDSF];
-        this.nOverEta = new double[points.length][nDSF];
-        System.out.println("start:" + points.length);
-
-        for(int i = 0; i < points.length; i ++){
-            for(int j = 0; j < nDSF; j ++){
-                if(j == 0){
-                    nOverKsi[i][j] = -0.25 * (1 - points[i].x);
-                    nOverEta[i][j] = -0.25 * (1 - points[i].y);
-                }
-                else if(j == 1){
-                    nOverKsi[i][j] = 0.25 * (1 - points[i].x);
-                    nOverEta[i][j] = -0.25 * (1 + points[i].y);
-                }
-                else if(j == 2){
-                    nOverKsi[i][j] = 0.25 * (1 + points[i].x);
-                    nOverEta[i][j] = 0.25 * (1 + points[i].y);
-                }
-                else if(j == 3){
-                    nOverKsi[i][j] = -0.25 * (1 + points[i].x);
-                    nOverEta[i][j] = 0.25 * (1 - points[i].y);
-                }
-            }
-        }
-    }
-
     public UniversalElement(double[] nodes, double[] weights, int nDSF) {
-        nOverKsi = new double[nodes.length * nodes.length][nDSF];
-        nOverEta = new double[nodes.length * nodes.length][nDSF];
-        nShapeValue = new double[nodes.length * nodes.length][nDSF];
+        deltaNOverDeltaKsi = new double[nodes.length * nodes.length][nDSF];
+        deltaNOverDeltaEta = new double[nodes.length * nodes.length][nDSF];
+        N = new double[nodes.length * nodes.length][nDSF];
 
         pointsX = new double[nodes.length * nodes.length];
         pointsY = new double[nodes.length * nodes.length];
@@ -70,30 +40,35 @@ public class UniversalElement {
             }
         }
 
+
         for(int i = 0; i < nodes.length * nodes.length; i ++){
             for(int j = 0; j < nDSF; j ++){
                 if(j == 0){
-                    nOverKsi[i][j] = -0.25 * (1 - pointsX[i]);
-                    nOverEta[i][j] = -0.25 * (1 - pointsY[i]);
-                    nShapeValue[i][j] = 0.25 * (1 - pointsX[i]) * (1 - pointsY[i]);
+                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 - pointsX[i]);
+                    deltaNOverDeltaEta[i][j] = -0.25 * (1 - pointsY[i]);
+                    N[i][j] = 0.25 * (1 - pointsY[i]) * (1 - pointsX[i]);
                 }
                 else if(j == 1){
-                    nOverKsi[i][j] = 0.25 * (1 - pointsX[i]);
-                    nOverEta[i][j] = -0.25 * (1 + pointsY[i]);
-                    nShapeValue[i][j] = 0.25 * (1 + pointsX[i]) * (1 - pointsY[i]);
+                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 - pointsX[i]);
+                    deltaNOverDeltaEta[i][j] = -0.25 * (1 + pointsY[i]);
+                    N[i][j] = 0.25 * (1 + pointsY[i]) * (1 - pointsX[i]);
                 }
                 else if(j == 2){
-                    nOverKsi[i][j] = 0.25 * (1 + pointsX[i]);
-                    nOverEta[i][j] = 0.25 * (1 + pointsY[i]);
-                    nShapeValue[i][j] = 0.25 * (1 + pointsX[i]) * (1 + pointsY[i]);
+                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 + pointsX[i]);
+                    deltaNOverDeltaEta[i][j] = 0.25 * (1 + pointsY[i]);
+                    N[i][j] = 0.25 * (1 + pointsY[i]) * (1 + pointsX[i]);
                 }
                 else if(j == 3){
-                    nOverKsi[i][j] = -0.25 * (1 + pointsX[i]);
-                    nOverEta[i][j] = 0.25 * (1 - pointsY[i]);
-                    nShapeValue[i][j] = 0.25 * (1 - pointsX[i]) * (1 + pointsY[i]);
+                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 + pointsX[i]);
+                    deltaNOverDeltaEta[i][j] = 0.25 * (1 - pointsY[i]);
+                    N[i][j] = 0.25 * (1 - pointsY[i]) * (1 + pointsX[i]);
                 }
             }
         }
+
+        //deltaNOverDeltaKsi = Matrix.transformVertically2dArray(getDeltaNOverDeltaKsi());
+        //deltaNOverDeltaEta = Matrix.transformVertically2dArray(getDeltaNOverDeltaEta());
+        //N = Matrix.transformVertically2dArray(getN());
     }
 
 

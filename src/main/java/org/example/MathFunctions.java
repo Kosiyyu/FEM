@@ -131,15 +131,16 @@ public class MathFunctions {
         double [] nodesArray = new double[numberOfIntegrationPoints];
 
         if (numberOfIntegrationPoints == 2) {
-            nodes.add(1 / Math.sqrt(3));
             nodes.add(-1 / Math.sqrt(3));
+            nodes.add(1 / Math.sqrt(3));
             for(int i = 0; i < nodes.size(); i++){
                 nodesArray[i] = nodes.get(i);
             }
         } else if (numberOfIntegrationPoints == 3) {
-            nodes.add(Math.sqrt(3.0 / 5.0));
-            nodes.add(0.0);
+
             nodes.add(-Math.sqrt(3.0 / 5.0));
+            nodes.add(0.0);
+            nodes.add(Math.sqrt(3.0 / 5.0));
             for(int i = 0; i < nodes.size(); i++){
                 nodesArray[i] = nodes.get(i);
             }
