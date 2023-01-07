@@ -59,11 +59,11 @@ public class Main {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        int numberOfIntegrationPoints = 3;
-        int numberOfIntegrationPointsOnSide = 3;
+        int numberOfIntegrationPoints = 4;
+        int numberOfIntegrationPointsOnSide = 4;
         int nDSF= 4;
 
-        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), nDSF);
+        UniversalElement universalElement = new UniversalElement(Functions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), Functions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), nDSF);
 
         for(int resultElementCounter = 0; resultElementCounter < grid.getElements().length; resultElementCounter++) {// petetla po kazdym punkcie calkowania
             int []nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
@@ -118,7 +118,7 @@ public class Main {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //ponizej warunki brzegowe liczymy
 
-        double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
+        double [] nodes2 = Functions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
 
 
         Point[] dummyPoints = new Point[numberOfIntegrationPointsOnSide * 4];
@@ -184,12 +184,12 @@ public class Main {
             for (int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
                 double determinant;
                 if (x != 3) {
-                    determinant = MathFunctions.distance(resultNodes[x], resultNodes[x + 1]) / 2.0;
+                    determinant = Functions.distance(resultNodes[x], resultNodes[x + 1]) / 2.0;
                     if (resultNodes[x].getBC() == 1 && resultNodes[x + 1].getBC() == 1) {
                         bCFlag = true;
                     }
                 } else {
-                    determinant = MathFunctions.distance(resultNodes[3], resultNodes[0]) / 2.0;
+                    determinant = Functions.distance(resultNodes[3], resultNodes[0]) / 2.0;
                     if (resultNodes[3].getBC() == 1 && resultNodes[0].getBC() == 1) {
                         bCFlag = true;
                     }
@@ -210,7 +210,7 @@ public class Main {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
                             }
                         }
-                        double[][] Hbc = calculateHbc(i,nArray, MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa());
+                        double[][] Hbc = calculateHbc(i,nArray, Functions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa());
                         resultHBC = Matrix.add2dArrays(resultHBC, Hbc);
                     }
 
@@ -231,7 +231,7 @@ public class Main {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
                             }
                         }
-                        double[][] P = calculateP(i, nArray, MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa(), globalData.getTot());
+                        double[][] P = calculateP(i, nArray, Functions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa(), globalData.getTot());
                         resultP = Matrix.add2dArrays(resultP, P);
                     }
                     bCFlag = false;
