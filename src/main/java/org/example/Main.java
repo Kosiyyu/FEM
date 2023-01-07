@@ -29,6 +29,24 @@ public class Main {
         return C;
     }
 
+    public static double[][] calculateHbc(int index, double[][] N, double weight, double determinant, double alfa){
+        double[][] row = Matrix.getRow(index, N);
+        double[][] col = Matrix.replace2dArrayDimensions(Matrix.getRow(index, N));
+        double[][] Hbc = Matrix.multiplyNumberBy2dArray(determinant * alfa * weight, Matrix.multiply2dArrays(col, row));
+        return Hbc;
+    }
+
+    public static double[][] calculateP(int index, double[][] N, double weight, double determinant, double alfa, double tot){
+        double[][] col = Matrix.replace2dArrayDimensions(Matrix.getRow(index, N));
+        double[][] P = Matrix.multiplyNumberBy2dArray(alfa * tot * determinant * weight, col);
+//        double[][] row = Matrix.getRow(index, N);
+//        double[][] col = Matrix.replace2dArrayDimensions(Matrix.getRow(index, N));
+//        double[][] P = Matrix.multiplyNumberBy2dArray(determinant * alfa * weight * tot, Matrix.multiply2dArrays(col, row));
+        return P;
+    }
+
+
+
     public static void main(String[] args) {
         GlobalData globalData;
         Grid grid;
@@ -41,12 +59,11 @@ public class Main {
 
         EquationsSystem equationsSystem = new EquationsSystem(grid.getNumberOfNodes());
 
-        int numberOfIntegrationPoints = 4;//liczba punktow calkowaniax
-        int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
+        int numberOfIntegrationPoints = 3;
+        int numberOfIntegrationPointsOnSide = 3;
+        int nDSF= 4;
 
-        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPoints), nDSF);
-        //universalElement.setNOverKsi(Matrix.transformHorizontally2dArray(universalElement.getNOverKsi()));
-        //universalElement.setNOverEta(Matrix.transformVertically2dArray(universalElement.getNOverEta()));
+        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), nDSF);
 
         for(int resultElementCounter = 0; resultElementCounter < grid.getElements().length; resultElementCounter++) {// petetla po kazdym punkcie calkowania
             int []nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
@@ -59,8 +76,6 @@ public class Main {
                         .get();//error for null!!!
                 resultNodes[i] = n;
             }
-
-            System.out.println("### Element==> "+ (resultElementCounter + 1) + "{");
 
             double [][]resultH = new double[nDSF][nDSF];
             double [][]resultC = new double[nDSF][nDSF];
@@ -90,9 +105,6 @@ public class Main {
                 resultH = Matrix.add2dArrays(resultH, H);
 
                 double[][] C = calculateC(resultNodesCounter, universalElement.getN(), universalElement.getWeightsX(), universalElement.getWeightsY(), determinant, globalData.getSpecificHeat(), globalData.getDensity());
-                System.out.println(determinant);
-                Matrix.print2dArray(C);
-                System.out.println("-----------");
                 resultC = Matrix.add2dArrays(resultC, C);
             }
             grid.getElements()[resultElementCounter].setH(resultH);//zapisywanie do elementow
@@ -100,46 +112,46 @@ public class Main {
 
             grid.getElements()[resultElementCounter].setC(resultC);//zapisywanie do elementow
             equationsSystem.addC(grid.getElements()[resultElementCounter]);//wczytywanie do ukladu rownan
-
-            System.out.println("}");
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //ponizej warunki brzegowe liczymy
 
-
-
-
-
-
-
-        int numberOfIntegrationPointsOnSide = 4;// to trzeba zmienic tak zeby ustalac z mienna i na tej podstawie ustawai sie od[pwiednia ilosc punkow calkowania w tabeli
-
         double [] nodes2 = MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide);
 
 
         Point[] dummyPoints = new Point[numberOfIntegrationPointsOnSide * 4];
+        double[] pointsX = new double[numberOfIntegrationPointsOnSide * 4];
+        double[] pointsY = new double[numberOfIntegrationPointsOnSide * 4];
 
         int counter = 0;
         //bok dol
         for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
             dummyPoints[counter] = new Point(nodes2[i], -1);
+            pointsX[counter] = nodes2[i];
+            pointsY[counter] = -1;
             counter++;
         }
         //bok prawo
         for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
             dummyPoints[counter] = new Point(1, nodes2[i]);
+            pointsX[counter] = 1;
+            pointsY[counter] = nodes2[i];
             counter++;
         }
         //bok gora
         for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
             dummyPoints[counter] = new Point(nodes2[i], 1);
+            pointsX[counter] = nodes2[i];
+            pointsY[counter] = 1;
             counter++;
         }
         //bok lewo
         for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {//lece po jednym boku
             dummyPoints[counter] = new Point(-1, nodes2[i]);
+            pointsX[counter] = -1;
+            pointsY[counter] = nodes2[i];
             counter++;
         }
 
@@ -149,7 +161,6 @@ public class Main {
 
 
         //petla po elementach
-        double[][] test = new double[4][1];
         for(int elementId = 0; elementId < grid.getElements().length; elementId++) {
             //wyciaganei node'ow z danego elementu
             int[] nodeIds = grid.getElements()[elementId].getNodeIds();
@@ -171,34 +182,23 @@ public class Main {
             double[][] resultHBC = new double[nDSF][nDSF];
             double[][] resultP = new double[nDSF][1];
             for (int x = 0; x < 4; x++) {//lece 4 razy bo dla kazdego boku
-                double[][] HBC = new double[nDSF][nDSF];
-                double[][] P = new double[nDSF][1];
-                //System.out.println(x);
-
-                double detJ;
+                double determinant;
                 if (x != 3) {
-                    detJ = MathFunctions.distance(resultNodes[x], resultNodes[x + 1]) / 2.0;
+                    determinant = MathFunctions.distance(resultNodes[x], resultNodes[x + 1]) / 2.0;
                     if (resultNodes[x].getBC() == 1 && resultNodes[x + 1].getBC() == 1) {
                         bCFlag = true;
                     }
                 } else {
-                    detJ = MathFunctions.distance(resultNodes[3], resultNodes[0]) / 2.0;
+                    determinant = MathFunctions.distance(resultNodes[3], resultNodes[0]) / 2.0;
                     if (resultNodes[3].getBC() == 1 && resultNodes[0].getBC() == 1) {
                         bCFlag = true;
                     }
                 }
-
                 //jezeli warunek brzegowy wystepuje to liczmy HBC
-                //System.out.println(bCFlag);
-
-
                 if (bCFlag) {
-                    double[][] row = new double[0][];
-                    double[][] transRow = new double[0][];
-                    for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
-                        double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
-                        double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
-                        //System.out.println(ksi + " " + eta);
+                    for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku po punktach calkowania
+                        double ksi = pointsX[numberOfIntegrationPointsOnSide * x + i];
+                        double eta = pointsY[numberOfIntegrationPointsOnSide * x + i];
                         for (int j = 0; j < nDSF; j++) {
                             if (j == 0) {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
@@ -210,23 +210,16 @@ public class Main {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
                             }
                         }
-                        //Matrix.print2dArray(nArray);
-                        row = Matrix.getRow(i, nArray);//nArray to macierz przmnozona przez ksi eta
-                        transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                        HBC = Matrix.add2dArrays(HBC, Matrix.multiplyNumberBy2dArray(detJ, Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide)[i], Matrix.multiply2dArrays(transRow, row))));
+                        double[][] Hbc = calculateHbc(i,nArray, MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa());
+                        resultHBC = Matrix.add2dArrays(resultHBC, Hbc);
                     }
-                    //System.out.println(x);
-                    //Matrix.print2dArray(nArray);
-                    //Matrix.print2dArray(HBC);//dobrze wychodzi
-                    resultHBC = Matrix.add2dArrays(resultHBC, HBC);
 
 
 
                     //tutaj operacje dla wektora P
                     for (int i = 0; i < numberOfIntegrationPointsOnSide; i++) {// i lece po jednym boku i licze dla niego nArray
-                        double ksi = dummyPoints[numberOfIntegrationPointsOnSide * x + i].x;
-                        double eta = dummyPoints[numberOfIntegrationPointsOnSide * x + i].y;
-                        //System.out.println(ksi + " " + eta);
+                        double ksi = pointsX[numberOfIntegrationPointsOnSide * x + i];
+                        double eta = pointsY[numberOfIntegrationPointsOnSide * x + i];
                         for (int j = 0; j < nDSF; j++) {
                             if (j == 0) {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 - eta);
@@ -238,43 +231,24 @@ public class Main {
                                 nArray[i][j] = 0.25 * (1 - ksi) * (1 + eta);
                             }
                         }
-                        P = Matrix.replace2dArrayDimensions(Matrix.getRow(i, nArray));
-                        P = Matrix.multiplyNumberBy2dArray(globalData.getAlfa() * globalData.getTot() * detJ * MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPointsOnSide)[i], P);//na sztywno
-                        //Matrix.print2dArray(P);
+                        double[][] P = calculateP(i, nArray, MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPointsOnSide)[i], determinant, globalData.getAlfa(), globalData.getTot());
                         resultP = Matrix.add2dArrays(resultP, P);
                     }
-
-
-
-
-
-
-
-
-
-
                     bCFlag = false;
                 }
             }
-            //
             grid.getElements()[elementId].setHBC(resultHBC);
-            equationsSystem.addHBC(grid.getElements()[elementId]);
+            equationsSystem.addHbc(grid.getElements()[elementId]);
 
             grid.getElements()[elementId].setP(resultP);
             equationsSystem.addP(grid.getElements()[elementId]);
 
         }
-        Matrix.print2dArray(equationsSystem.getHG());//pod dodaniu hbc
+        Matrix.print2dArray(equationsSystem.getHG());//H + Hbc
         Matrix.print2dArray(equationsSystem.getCG());
         Matrix.print2dArray(equationsSystem.getPG());
 
         Gauss gauss = new Gauss(equationsSystem.getHG(), equationsSystem.getPG());
-        //Matrix.print2dArray(gauss.calculate());
-
-/*        double[][] t0 = Matrix.createTemperatureVector(16, globalData.getInitialTemp());
-        double[][] newH = Matrix.add2dArrays(equationsSystem.getHG(), Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()));
-        double[][] newP = Matrix.add2dArrays(equationsSystem.getPG(), Matrix.multiply2dArrays( Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()), t0));
-        double[][] t1 = Gauss.calculate(newH, newP);*/
 
         double[][] t0 = Matrix.createTemperatureVector(grid.getNumberOfNodes(), globalData.getInitialTemp());
         double[][] newH;
@@ -295,24 +269,5 @@ public class Main {
             System.out.println(i + ". time: " + i * globalData.getSimulationStepTime() + ", min: " + Matrix.minValueInVector(t1) + ", max: " + Matrix.maxValueInVector(t1));
             t0 = t1;
         }
-
-
-
-
-
-
-
-
-
-        /*  BUG!!! DEL WHEN FIXED
-        double [][] row = Matrix.getRow(0,nArray);
-        Matrix.print2dArray(row);
-        double [][] transRow = Matrix.replace2dArrayDimensions(Matrix.getRow(0,nArray));
-        Matrix.print2dArray(transRow);
-        Matrix.print2dArray(Matrix.replace2dArrayDimensions(transRow));
-        //tu jest blaad dzial tylko z row -> col, a z col -> row to tak srednio
-        //+
-        //bug w funkcji do transponowania (replace2dArrayDimensions) w Matrix
-        */
     }
 }

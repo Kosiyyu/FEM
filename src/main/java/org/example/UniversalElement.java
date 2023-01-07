@@ -11,9 +11,9 @@ public class UniversalElement {
 
     private double[][] N;
 
-    private double[] pointsX;
+    private double[] ksi;
 
-    private double[] pointsY;
+    private double[] eta;
 
     private double[] weightsX;
 
@@ -24,16 +24,16 @@ public class UniversalElement {
         deltaNOverDeltaEta = new double[nodes.length * nodes.length][nDSF];
         N = new double[nodes.length * nodes.length][nDSF];
 
-        pointsX = new double[nodes.length * nodes.length];
-        pointsY = new double[nodes.length * nodes.length];
+        eta = new double[nodes.length * nodes.length];
+        ksi = new double[nodes.length * nodes.length];
         weightsX = new double[nodes.length * nodes.length];
         weightsY = new double[nodes.length * nodes.length];
 
         int counter = 0;
         for(int i = 0; i < nodes.length; i++){
             for(int j = 0; j < nodes.length; j++){
-                pointsX[counter] = nodes[i];
-                pointsY[counter] = nodes[j];
+                eta[counter] = nodes[i];
+                ksi[counter] = nodes[j];
                 weightsX[counter] = weights[i];
                 weightsY[counter] = weights[j];
                 counter++;
@@ -44,34 +44,49 @@ public class UniversalElement {
         for(int i = 0; i < nodes.length * nodes.length; i ++){
             for(int j = 0; j < nDSF; j ++){
                 if(j == 0){
-                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 - pointsX[i]);
-                    deltaNOverDeltaEta[i][j] = -0.25 * (1 - pointsY[i]);
-                    N[i][j] = 0.25 * (1 - pointsY[i]) * (1 - pointsX[i]);
+                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 - eta[i]);
+                    deltaNOverDeltaEta[i][j] = -0.25 * (1 - ksi[i]);
+                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 - eta[i]);
                 }
                 else if(j == 1){
-                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 - pointsX[i]);
-                    deltaNOverDeltaEta[i][j] = -0.25 * (1 + pointsY[i]);
-                    N[i][j] = 0.25 * (1 + pointsY[i]) * (1 - pointsX[i]);
+                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 - eta[i]);
+                    deltaNOverDeltaEta[i][j] = -0.25 * (1 + ksi[i]);
+                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 - eta[i]);
                 }
                 else if(j == 2){
-                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 + pointsX[i]);
-                    deltaNOverDeltaEta[i][j] = 0.25 * (1 + pointsY[i]);
-                    N[i][j] = 0.25 * (1 + pointsY[i]) * (1 + pointsX[i]);
+                    deltaNOverDeltaKsi[i][j] = 0.25 * (1 + eta[i]);
+                    deltaNOverDeltaEta[i][j] = 0.25 * (1 + ksi[i]);
+                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 + eta[i]);
                 }
                 else if(j == 3){
-                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 + pointsX[i]);
-                    deltaNOverDeltaEta[i][j] = 0.25 * (1 - pointsY[i]);
-                    N[i][j] = 0.25 * (1 - pointsY[i]) * (1 + pointsX[i]);
+                    deltaNOverDeltaKsi[i][j] = -0.25 * (1 + eta[i]);
+                    deltaNOverDeltaEta[i][j] = 0.25 * (1 - ksi[i]);
+                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 + eta[i]);
                 }
             }
         }
-
-        //deltaNOverDeltaKsi = Matrix.transformVertically2dArray(getDeltaNOverDeltaKsi());
-        //deltaNOverDeltaEta = Matrix.transformVertically2dArray(getDeltaNOverDeltaEta());
-        //N = Matrix.transformVertically2dArray(getN());
     }
 
-
+    public static double [][] nForHbcAndP(double[] ksi, double[] eta, int nDSF){
+        double [][] N = new double[ksi.length][eta.length];
+        for(int i = 0; i < N.length; i++){
+            for(int j = 0; j < nDSF; j ++){
+                if(j == 0){
+                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 - eta[i]);
+                }
+                else if(j == 1){
+                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 - eta[i]);
+                }
+                else if(j == 2){
+                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 + eta[i]);
+                }
+                else if(j == 3){
+                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 + eta[i]);
+                }
+            }
+        }
+        return N;
+    }
 
 
 

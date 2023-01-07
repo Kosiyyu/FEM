@@ -30,7 +30,7 @@ public class EquationsSystem {
         }
     }
 
-    public void addHBC(Element e){
+    public void addHbc(Element e){
         int []nodeIDs = e.getNodeIds();
         double [][] HBC = e.getHBC();
 

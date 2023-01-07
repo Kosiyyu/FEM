@@ -1,8 +1,5 @@
 package org.example;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 public class Test {
 
     public static double N1(double ksi, double eta)
@@ -40,30 +37,19 @@ public class Test {
         int numberOfIntegrationPoints = 2;//liczba punktow calkowaniax
         int nDSF= 4;//liczba funkcji ksztaltu(nazwa zmiennej do zmiany!!!)
 
-        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.coefficientsOfGaussianLagrangeQuadrature2(numberOfIntegrationPoints), nDSF);
+        UniversalElement universalElement = new UniversalElement(MathFunctions.nodesOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), MathFunctions.weightsOfGaussianLagrangeQuadrature(numberOfIntegrationPoints), nDSF);
 
         Matrix.print2dArray((universalElement.getDeltaNOverDeltaKsi()));
         Matrix.print2dArray((universalElement.getDeltaNOverDeltaEta()));
         Matrix.print2dArray((universalElement.getN()));
-        for(double d : universalElement.getPointsX()){
+        for(double d : universalElement.getEta()){
             System.out.println(d);
         }
         System.out.println("aaaaa");
-        for(double d : universalElement.getPointsY()){
+        for(double d : universalElement.getKsi()){
             System.out.println(d);
         }
         System.out.println("aaaaa");
-
-
-
-//        double [][] a = {
-//                {1,1,1,1},
-//                {1,2,1,1},
-//                {1,1,3,1},
-//                {1,1,1,4}};
-//
-//        Matrix.print2dArray(a);
-//        Matrix.print2dArray(Matrix.transformVertically2dArray(a));
-
+        System.out.println("alalalalal");
     }
 }
