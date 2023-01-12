@@ -28,16 +28,16 @@ public class Matrix {
         return arr;
     }
 
-    public static void print2dArray(double[][] arr) {
-        System.out.println("--2dArray-->    " + "y: " + arr.length + ", x: " + arr[0].length);
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr[i].length; j++) {
-                System.out.print(arr[i][j] + " ");
-            }
-            System.out.println();
+public static void print2dArray(double[][] arr) {
+    System.out.println("--2dArray-->    " + "y: " + arr.length + ", x: " + arr[0].length);
+    for (int i = 0; i < arr.length; i++) {
+        for (int j = 0; j < arr[i].length; j++) {
+            System.out.print(arr[i][j] + " ");
         }
         System.out.println();
     }
+    System.out.println();
+}
 
     public static double[][] multiplyNumberBy2dArray(double num, double[][] pass){
         double[][] arr = new double[pass.length][pass[0].length];
@@ -155,13 +155,11 @@ public class Matrix {
     }
 
     public static double[][] multiply2dArrays(double a[][], double b[][]){//a[m][n], b[n][p]
-
         if(a[0].length != b.length){
             System.out.println("Invalid sizes");
             return null;
         }
         double ab[][] = new double[a.length][b[0].length];
-
         for(int i = 0; i < a.length; i++){
             for(int j = 0; j < b[0].length; j++){
                 for(int k = 0; k < a[0].length; k++){

@@ -67,22 +67,18 @@ public class UniversalElement {
         }
     }
 
-    public static double [][] nForHbcAndP(double[] ksi, double[] eta, int nDSF){
-        double [][] N = new double[ksi.length][eta.length];
-        for(int i = 0; i < N.length; i++){
-            for(int j = 0; j < nDSF; j ++){
-                if(j == 0){
-                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 - eta[i]);
-                }
-                else if(j == 1){
-                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 - eta[i]);
-                }
-                else if(j == 2){
-                    N[i][j] = 0.25 * (1 + ksi[i]) * (1 + eta[i]);
-                }
-                else if(j == 3){
-                    N[i][j] = 0.25 * (1 - ksi[i]) * (1 + eta[i]);
-                }
+    public static double [][] nForHbcAndP(int i, double [][] N, double[] pointsX, double[] pointsY, int nDSF, int x, int numberOfIntegrationPointsOnSide){
+        double ksi = pointsX[numberOfIntegrationPointsOnSide * x + i];
+        double eta = pointsY[numberOfIntegrationPointsOnSide * x + i];
+        for (int j = 0; j < nDSF; j++) {
+            if (j == 0) {
+                N[i][j] = 0.25 * (1 - ksi) * (1 - eta);
+            } else if (j == 1) {
+                N[i][j] = 0.25 * (1 + ksi) * (1 - eta);
+            } else if (j == 2) {
+                N[i][j] = 0.25 * (1 + ksi) * (1 + eta);
+            } else if (j == 3) {
+                N[i][j] = 0.25 * (1 - ksi) * (1 + eta);
             }
         }
         return N;

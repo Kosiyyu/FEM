@@ -54,10 +54,6 @@ public class Gauss {
     }
 
 
-    public double[][] calculate(){
-        return backSubstitution(elimination());
-    }
-
     public static double[][] calculate(double [][] matrix, double[][] vector){
         calculationMatrix = new double[matrix.length][matrix[0].length + 1];
         for(int i = 0; i < calculationMatrix.length; i++){//rows

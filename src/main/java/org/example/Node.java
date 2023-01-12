@@ -8,7 +8,6 @@ public class Node {
     private int nodeId;
     private double x = 0.0;
     private double y = 0.0;
-    private double t = 0.0;
     private int BC = 0;
 
     public Node() {
@@ -26,6 +25,6 @@ public class Node {
     }
 
     public String toString() {
-        return "x: " + this.x + " , y: " + this.y + " , t: " + this.t + " , BC: " + this.BC;
+        return "x: " + this.x + " , y: " + this.y + " , BC: " + this.BC;
     }
 }
