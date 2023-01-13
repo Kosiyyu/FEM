@@ -3,7 +3,7 @@ package org.example;
 import lombok.Data;
 
 @Data
-public class EquationsSystem {
+public class EquationSystem {
 
     private double[][] HG;
 
@@ -12,7 +12,7 @@ public class EquationsSystem {
     private double[][] PG;
 
     private int size;
-    public EquationsSystem(int size) {
+    public EquationSystem(int size) {
         this.HG = new double[size][size];
         this.CG = new double[size][size];
         this.PG = new double[size][1];
