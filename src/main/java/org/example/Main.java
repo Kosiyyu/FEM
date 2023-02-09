@@ -28,7 +28,7 @@ public class Main {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            System.out.println("\033[0;93m" + "--Element: " + (resultElementCounter + 1) + "--" + "\033[0m");
+            //System.out.println("\033[0;93m" + "--Element: " + (resultElementCounter + 1) + "--" + "\033[0m");
             int[] nodeIds = grid.getElements()[resultElementCounter].getNodeIds();
             Node[] nodesFromSelectedElement = new Node[4];
             for (int i = 0; i < nodesFromSelectedElement.length; i++) {
@@ -75,7 +75,7 @@ public class Main {
                 //Matrix.print2dArray(C);
                 resultC = Matrix.add2dArrays(resultC, C);
             }
-            Matrix.print2dArray(resultH);
+            //Matrix.print2dArray(resultH);
             //Matrix.print2dArray(resultC);
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,17 +129,18 @@ public class Main {
             //WRITE TO ELEMENT AND AGGREGATION
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            grid.getElements()[resultElementCounter].setH(resultH);
+            //Matrix.print2dArray(resultH);
+            equationsSystem.addH(grid.getElements()[resultElementCounter]);
+
+            grid.getElements()[resultElementCounter].setC(resultC);
+            equationsSystem.addC(grid.getElements()[resultElementCounter]);
+
             grid.getElements()[resultElementCounter].setHBC(resultHBC);
             equationsSystem.addHbc(grid.getElements()[resultElementCounter]);
 
             grid.getElements()[resultElementCounter].setP(resultP);
             equationsSystem.addP(grid.getElements()[resultElementCounter]);
-
-            grid.getElements()[resultElementCounter].setH(resultH);
-            equationsSystem.addH(grid.getElements()[resultElementCounter]);
-
-            grid.getElements()[resultElementCounter].setC(resultC);
-            equationsSystem.addC(grid.getElements()[resultElementCounter]);
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,7 +153,11 @@ public class Main {
         //Matrix.print2dArray(equationsSystem.getCG());//print CG
 
         //Matrix.print2dArray(equationsSystem.getPG());//print PG
-//System.out.println("\033[0;92m" + "--Element: " + (resultElementCounter + 1) + "--" + "\033[0m")
+
+        //System.out.println("\033[0;92m" + "--Element: " + (resultElementCounter + 1) + "--" + "\033[0m")
+
+        int precision = 3;
+
         System.out.println("\033[0;92m" + "RESULTS:" + "\033[0m");
         double[][] t0 = Matrix.createTemperatureVector(grid.getNumberOfNodes(), globalData.getInitialTemp());
         double[][] newH;
@@ -161,9 +166,11 @@ public class Main {
         int limit = (int) ((globalData.getSimulationTime() / globalData.getSimulationStepTime()));
         for (int i = 1; i < limit + 1; i++) {
             newH = Matrix.add2dArrays(equationsSystem.getHG(), Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()));
+            //Matrix.print2dArray(newH);
             newP = Matrix.add2dArrays(equationsSystem.getPG(), Matrix.multiply2dArrays(Matrix.multiplyNumberBy2dArray(1.0 / globalData.getSimulationStepTime(), equationsSystem.getCG()), t0));
+            //Matrix.print2dArray(newP);
             t1 = Gauss.calculate(newH, newP);
-            System.out.println("\033[0;92m" + i + ". time: " + i * globalData.getSimulationStepTime() + ", min: " + Matrix.minValueInVector(t1) + ", max: " + Matrix.maxValueInVector(t1) + "\033[0m");
+            System.out.println("\033[0;92m" + i + ". time: " + String.format("%." + precision + "f",i * globalData.getSimulationStepTime()) + ", min: " + String.format("%." + precision + "f",Matrix.minValueInVector(t1)) + ", max: " + String.format("%." + precision + "f",Matrix.maxValueInVector(t1)) + "\033[0m");
             t0 = t1;
         }
     }
